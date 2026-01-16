@@ -1,20 +1,48 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
-# Run and deploy your AI Studio app
+# EduTrack: Smart Curriculum & Attendance
 
-This contains everything you need to run your app locally.
+This application is set up to run in an isolated Python virtual environment for local development and testing.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1vToqM5ZnLCzQ8sJ3ap4QdVtZaWAp19QO
+## Prerequisites
 
-## Run Locally
+- Python 3.8 or higher
+- Browser (Chrome/Edge/Firefox)
 
-**Prerequisites:**  Node.js
+## Setup and Run
 
+To set up the environment and start the application:
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **Create the Virtual Environment:**
+   ```bash
+   python -m venv venv
+   ```
+
+2. **Activate the Environment:**
+   - **Windows:**
+     ```bash
+     .\venv\Scripts\activate
+     ```
+   - **macOS/Linux:**
+     ```bash
+     source venv/bin/activate
+     ```
+
+3. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Start the Server:**
+   ```bash
+   python server.py
+   ```
+
+5. **Access the App:**
+   Open [http://localhost:8000](http://localhost:8000) in your browser.
+
+## Features
+
+- **Teacher View:** Manage attendance, plan activities using Gemini AI, and track student progress.
+- **Student View:** View schedule, track assignment status, and monitor grades.
+- **AI Integration:** Lesson planning and activity suggestions powered by Google Gemini.
+- **Responsive UI:** Built with React and Tailwind CSS for a seamless experience across devices.
