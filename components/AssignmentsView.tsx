@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Student, Assignment } from '../types';
+import FileUpload from './FileUpload';
 
 interface AssignmentsViewProps {
   student: Student;
@@ -13,6 +14,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
   const [search, setSearch] = useState('');
   const [submissionMode, setSubmissionMode] = useState(false);
   const [submissionText, setSubmissionText] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredAssignments = student.assignments.filter(as => {
@@ -32,6 +34,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
     setSelectedAssignment(as);
     setSubmissionMode(false);
     setSubmissionText('');
+    setSelectedFile(null);
   };
 
   const handleSubmitWork = () => {
@@ -47,6 +50,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
       setIsSubmitting(false);
       setSubmissionMode(false);
       setSelectedAssignment(null);
+      setSelectedFile(null);
       alert('Assignment submitted successfully!');
     }, 1200);
   };
@@ -54,39 +58,39 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl">📚</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg md:text-xl">📚</div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Issued</p>
-            <p className="text-2xl font-black text-slate-800">{stats.total}</p>
+            <p className="text-xl md:text-2xl font-black text-slate-800">{stats.total}</p>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl">⏳</div>
+        <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg md:text-xl">⏳</div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action Required</p>
-            <p className="text-2xl font-black text-slate-800">{stats.pending}</p>
+            <p className="text-xl md:text-2xl font-black text-slate-800">{stats.pending}</p>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">✅</div>
+        <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4 sm:col-span-2 md:col-span-1">
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-lg md:text-xl">✅</div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Completed</p>
-            <p className="text-2xl font-black text-slate-800">{stats.completed}</p>
+            <p className="text-xl md:text-2xl font-black text-slate-800">{stats.completed}</p>
           </div>
         </div>
       </div>
 
       {/* Main Container */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-        <div className="p-8 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-center gap-6 bg-slate-50/30">
-          <div className="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-auto overflow-hidden">
+      <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden min-h-[500px] md:min-h-[600px] flex flex-col">
+        <div className="p-4 md:p-8 border-b border-slate-100 flex flex-col lg:flex-row justify-between items-center gap-6 bg-slate-50/30">
+          <div className="flex flex-wrap bg-white p-1 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-auto overflow-hidden">
             {(['all', 'pending', 'submitted', 'graded'] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`flex-1 lg:flex-none px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex-1 lg:flex-none px-3 md:px-6 py-2 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider transition-all ${
                   filter === f ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
@@ -109,25 +113,25 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
 
         <div className="flex-1 overflow-y-auto">
           {filteredAssignments.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 p-4 md:p-8">
               {filteredAssignments.map((as) => (
                 <div
                   key={as.id}
                   onClick={() => handleOpenAssignment(as)}
-                  className="group bg-white p-6 rounded-[2rem] border border-slate-100 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-50 transition-all cursor-pointer relative overflow-hidden"
+                  className="group bg-white p-4 md:p-6 rounded-[2rem] border border-slate-100 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-50 transition-all cursor-pointer relative overflow-hidden"
                 >
-                  <div className={`absolute top-0 right-0 w-2 h-full ${
+                  <div className={`absolute top-0 right-0 w-1.5 md:w-2 h-full ${
                     as.status === 'graded' ? 'bg-emerald-500' : as.status === 'submitted' ? 'bg-indigo-500' : 'bg-amber-500'
                   }`}></div>
                   
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 flex items-center justify-center rounded-2xl ${
+                    <div className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl ${
                       as.subject === 'Science' ? 'bg-emerald-50 text-emerald-600' : 
                       as.subject === 'Math' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'
                     }`}>
-                      <span className="text-2xl">{as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📝'}</span>
+                      <span className="text-xl md:text-2xl">{as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📝'}</span>
                     </div>
-                    <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${
+                    <span className={`text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full uppercase tracking-widest ${
                       as.status === 'graded' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
                       as.status === 'submitted' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 
                       'bg-amber-50 text-amber-700 border border-amber-100'
@@ -166,33 +170,33 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
 
       {/* Assignment Modal with Submission Support */}
       {selectedAssignment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
-            <div className={`p-10 ${selectedAssignment.subject === 'Science' ? 'bg-emerald-600' : 'bg-indigo-600'} text-white relative`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 max-h-[90vh] flex flex-col">
+            <div className={`p-6 md:p-10 ${selectedAssignment.subject === 'Science' ? 'bg-emerald-600' : 'bg-indigo-600'} text-white relative shrink-0`}>
                <button 
                 onClick={() => {
                   setSelectedAssignment(null);
                   setSubmissionMode(false);
                 }}
-                className="absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-xl transition-all"
+                className="absolute top-4 md:top-6 right-4 md:right-6 w-8 h-8 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-lg md:text-xl transition-all"
                >
                  ×
                </button>
-               <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-2">{selectedAssignment.subject}</p>
-               <h3 className="text-3xl font-black mb-4">{selectedAssignment.title}</h3>
-               <div className="flex gap-4">
-                  <div className="bg-white/10 px-4 py-2 rounded-xl border border-white/20">
-                     <p className="text-[10px] font-black uppercase opacity-60">Status</p>
-                     <p className="text-sm font-bold uppercase">{selectedAssignment.status}</p>
+               <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">{selectedAssignment.subject}</p>
+               <h3 className="text-xl md:text-3xl font-black mb-4">{selectedAssignment.title}</h3>
+               <div className="flex gap-2 md:gap-4">
+                  <div className="bg-white/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-white/20">
+                     <p className="text-[8px] md:text-[10px] font-black uppercase opacity-60">Status</p>
+                     <p className="text-[10px] md:text-sm font-bold uppercase">{selectedAssignment.status}</p>
                   </div>
-                  <div className="bg-white/10 px-4 py-2 rounded-xl border border-white/20">
-                     <p className="text-[10px] font-black uppercase opacity-60">Due Date</p>
-                     <p className="text-sm font-bold">{new Date(selectedAssignment.date).toLocaleDateString()}</p>
+                  <div className="bg-white/10 px-3 md:px-4 py-1.5 md:py-2 rounded-xl border border-white/20">
+                     <p className="text-[8px] md:text-[10px] font-black uppercase opacity-60">Due Date</p>
+                     <p className="text-[10px] md:text-sm font-bold">{new Date(selectedAssignment.date).toLocaleDateString()}</p>
                   </div>
                </div>
             </div>
 
-            <div className="p-10 space-y-8">
+            <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto">
                {submissionMode ? (
                  <div className="space-y-6 animate-in fade-in duration-300">
                     <div>
@@ -205,15 +209,12 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                       />
                     </div>
                     
-                    <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-                         <span className="text-xl">📎</span>
-                         <span className="text-xs font-bold text-indigo-700">Optional: Attachment Simulation</span>
-                       </div>
-                       <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">UPLOAD FILE</button>
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Supporting Documents</h4>
+                      <FileUpload onFileSelect={setSelectedFile} />
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 pt-4">
                       <button 
                         onClick={() => setSubmissionMode(false)}
                         className="flex-1 py-4 bg-slate-50 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all"
@@ -222,9 +223,9 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                       </button>
                       <button 
                         onClick={handleSubmitWork}
-                        disabled={isSubmitting || !submissionText.trim()}
+                        disabled={isSubmitting || (!submissionText.trim() && !selectedFile)}
                         className={`flex-[2] py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-100 active:scale-95 ${
-                          isSubmitting || !submissionText.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700 hover:shadow-indigo-200'
+                          isSubmitting || (!submissionText.trim() && !selectedFile) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700 hover:shadow-indigo-200'
                         }`}
                       >
                         {isSubmitting ? 'SUBMITTING...' : 'CONFIRM SUBMISSION'}

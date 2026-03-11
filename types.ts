@@ -62,7 +62,16 @@ export interface ScheduleEntry {
   teacher?: string;
 }
 
-export type View = 'dashboard' | 'attendance' | 'students' | 'planner' | 'my-progress' | 'schedule' | 'assignments';
+export type View = 'dashboard' | 'attendance' | 'students' | 'planner' | 'my-progress' | 'schedule' | 'assignments' | 'lesson-planner';
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  type: 'info' | 'success' | 'warning' | 'error';
+}
 
 export interface ActivitySuggestion {
   title: string;

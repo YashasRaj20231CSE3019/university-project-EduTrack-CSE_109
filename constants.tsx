@@ -165,3 +165,30 @@ export const INITIAL_ACTIVITIES: Activity[] = [
     status: 'planned'
   }
 ];
+
+export const INITIAL_NOTIFICATIONS = [
+  {
+    id: 'not-1',
+    title: 'New Assignment',
+    message: 'A new assignment "Cell Theory Essay" has been posted.',
+    time: '2 hours ago',
+    read: false,
+    type: 'info'
+  },
+  {
+    id: 'not-2',
+    title: 'Attendance Alert',
+    message: 'Class 9A attendance is below average today.',
+    time: '4 hours ago',
+    read: false,
+    type: 'warning'
+  },
+  {
+    id: 'not-3',
+    title: 'System Update',
+    message: 'EduTrack has been updated with new AI features.',
+    time: '1 day ago',
+    read: true,
+    type: 'success'
+  }
+];

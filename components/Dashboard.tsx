@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import Markdown from 'react-markdown';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Student, AttendanceRecord, Activity } from '../types';
+import { generateWeeklyReport } from '../services/aiService';
 
 interface DashboardProps {
   students: Student[];
@@ -10,10 +12,27 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities }) => {
+  const [showReport, setShowReport] = useState(false);
+  const [reportText, setReportText] = useState<string | null>(null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+
   const latestAttendance = attendance[attendance.length - 1];
   const attendanceRate = latestAttendance 
     ? Math.round((latestAttendance.presentStudentIds.length / students.length) * 100) 
     : 92; // Fallback for demo if empty
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    const stats = {
+      attendanceRate,
+      studentCount: students.length,
+    };
+    const text = await generateWeeklyReport(stats, activities);
+    setReportText(text);
+    setIsGeneratingReport(false);
+    setShowReport(true);
+  };
 
   const chartData = [
     { name: 'Mon', attendance: 85 },
@@ -33,15 +52,31 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Hero Section */}
-      <div className="bg-indigo-600 rounded-[2.5rem] p-10 text-white flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl shadow-indigo-200">
-        <div className="relative z-10 max-w-lg">
-          <h1 className="text-4xl font-extrabold mb-4 leading-tight">Welcome back, Dr. Miller! 👋</h1>
-          <p className="text-indigo-100 text-lg mb-6">Your classroom is performing 12% better than the school average this week. Keep it up!</p>
-          <div className="flex gap-3">
-            <button className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all active:scale-95 shadow-lg">
-              Generate Weekly Report
+      <div className="bg-indigo-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl shadow-indigo-200">
+        <div className="relative z-10 max-w-lg text-center md:text-left">
+          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Welcome back, Dr. Miller! 👋</h1>
+          <p className="text-indigo-100 text-sm md:text-lg mb-6">Your classroom is performing 12% better than the school average this week. Keep it up!</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+            <button 
+              onClick={handleGenerateReport}
+              disabled={isGeneratingReport}
+              className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
+            >
+              {isGeneratingReport ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <span>📊</span> Generate Weekly Report
+                </>
+              )}
             </button>
-            <button className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95">
+            <button 
+              onClick={() => setShowCalendar(true)}
+              className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95 text-sm md:text-base"
+            >
               View Calendar
             </button>
           </div>
@@ -58,34 +93,34 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
       </div>
 
       {/* Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white p-7 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-            <div className="flex items-center justify-between mb-5">
-              <span className={`p-4 bg-${stat.color}-50 text-${stat.color}-600 rounded-2xl text-2xl group-hover:scale-110 transition-transform`}>
+          <div key={i} className="bg-white p-5 md:p-7 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div className="flex items-center justify-between mb-4 md:mb-5">
+              <span className={`p-3 md:p-4 bg-${stat.color}-50 text-${stat.color}-600 rounded-2xl text-xl md:text-2xl group-hover:scale-110 transition-transform`}>
                 {stat.icon}
               </span>
-              <span className={`text-xs font-bold px-2 py-1 rounded-lg ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`text-[10px] md:text-xs font-bold px-2 py-1 rounded-lg ${stat.trend.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                 {stat.trend}
               </span>
             </div>
-            <p className="text-slate-400 text-sm font-semibold mb-1">{stat.label}</p>
-            <p className="text-3xl font-black text-slate-800">{stat.value}</p>
+            <p className="text-slate-400 text-xs md:text-sm font-semibold mb-1">{stat.label}</p>
+            <p className="text-2xl md:text-3xl font-black text-slate-800">{stat.value}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Attendance Chart */}
-        <div className="xl:col-span-2 bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold text-slate-800">Attendance Statistics</h3>
+        <div className="xl:col-span-2 bg-white p-5 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <h3 className="text-lg md:text-xl font-bold text-slate-800">Attendance Statistics</h3>
             <div className="flex gap-2">
-              <button className="px-4 py-1.5 text-xs font-bold bg-indigo-50 text-indigo-600 rounded-lg">WEEKLY</button>
-              <button className="px-4 py-1.5 text-xs font-bold text-slate-400 hover:bg-slate-50 rounded-lg">MONTHLY</button>
+              <button className="px-4 py-1.5 text-[10px] md:text-xs font-bold bg-indigo-50 text-indigo-600 rounded-lg">WEEKLY</button>
+              <button className="px-4 py-1.5 text-[10px] md:text-xs font-bold text-slate-400 hover:bg-slate-50 rounded-lg">MONTHLY</button>
             </div>
           </div>
-          <div className="h-80">
+          <div className="h-64 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -132,10 +167,10 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
         </div>
 
         {/* Schedule/Recent Activities Widget */}
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-bold text-slate-800">Class Roadmap</h3>
-            <button className="text-indigo-600 text-sm font-bold hover:underline">View All</button>
+            <h3 className="text-lg md:text-xl font-bold text-slate-800">Class Roadmap</h3>
+            <button className="text-indigo-600 text-xs md:text-sm font-bold hover:underline">View All</button>
           </div>
           <div className="flex-1 space-y-5">
             {activities.slice(0, 4).map((act, i) => (
@@ -170,6 +205,97 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
           </div>
         </div>
       </div>
+      {/* Weekly Report Modal */}
+      {showReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+              <div className="relative z-10 flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">AI Insights</p>
+                  <h3 className="text-2xl font-black">Weekly Performance Report 📈</h3>
+                </div>
+                <button 
+                  onClick={() => setShowReport(false)}
+                  className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            </div>
+            <div className="p-8 max-h-[60vh] overflow-y-auto prose prose-slate prose-indigo max-w-none">
+              <div className="markdown-body">
+                <Markdown>{reportText || ''}</Markdown>
+              </div>
+            </div>
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button 
+                onClick={() => window.print()}
+                className="px-6 py-3 bg-white border border-slate-200 text-slate-600 font-black rounded-xl hover:bg-slate-50 transition-all"
+              >
+                Print Report
+              </button>
+              <button 
+                onClick={() => setShowReport(false)}
+                className="px-8 py-3 bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition-all shadow-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Weekly Calendar Modal */}
+      {showCalendar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-slate-800 p-8 text-white flex justify-between items-center">
+              <div>
+                <h3 className="text-2xl font-black">Weekly Class Calendar 📅</h3>
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">March 10 - March 14, 2026</p>
+              </div>
+              <button 
+                onClick={() => setShowCalendar(false)}
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-8 overflow-x-auto">
+              <div className="grid grid-cols-5 gap-4 min-w-[800px]">
+                {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day, i) => (
+                  <div key={day} className="space-y-4">
+                    <div className="text-center pb-4 border-b border-slate-100">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{day}</p>
+                      <p className="text-xl font-black text-slate-800">{10 + i}</p>
+                    </div>
+                    <div className="space-y-2">
+                      {activities.filter(a => i % 2 === 0 ? a.subject === 'Math' : a.subject === 'Science').slice(0, 2).map((act, idx) => (
+                        <div key={idx} className={`p-3 rounded-xl border text-[10px] font-bold ${
+                          act.subject === 'Math' ? 'bg-indigo-50 border-indigo-100 text-indigo-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                        }`}>
+                          <p className="mb-1">{act.title}</p>
+                          <p className="opacity-70">{act.duration}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setShowCalendar(false)}
+                className="px-8 py-3 bg-slate-800 text-white font-black rounded-xl hover:bg-slate-900 transition-all"
+              >
+                Close Calendar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

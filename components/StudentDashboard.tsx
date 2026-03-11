@@ -1,15 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Student, AttendanceRecord } from '../types';
+import QRGenerator from './QRGenerator';
 
 interface StudentDashboardProps {
   student: Student;
   attendance: AttendanceRecord[];
   onNavigateToAssignments: () => void;
   onNavigateToSchedule: () => void;
+  onNavigateToLessonPlan: () => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance, onNavigateToAssignments, onNavigateToSchedule }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance, onNavigateToAssignments, onNavigateToSchedule, onNavigateToLessonPlan }) => {
+  const [showQR, setShowQR] = useState(false);
   const myAttendance = attendance.filter(record => record.presentStudentIds.includes(student.id));
   const attendanceRate = attendance.length > 0 
     ? Math.round((myAttendance.length / attendance.length) * 100) 
@@ -20,22 +23,34 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Student Welcome Hero */}
-      <div className="bg-indigo-600 rounded-[2.5rem] p-10 text-white flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl shadow-indigo-200">
+      <div className="bg-indigo-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl shadow-indigo-200">
         <div className="relative z-10 max-w-lg text-center md:text-left">
-          <h1 className="text-4xl font-extrabold mb-4 leading-tight">Hi, {student.name}! ✨</h1>
-          <p className="text-indigo-100 text-lg mb-6">Your overall performance is looking great. You have {pendingAssignments.length} assignments needing attention.</p>
-          <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Hi, {student.name}! ✨</h1>
+          <p className="text-indigo-100 text-sm md:text-lg mb-6">Your overall performance is looking great. You have {pendingAssignments.length} assignments needing attention.</p>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center md:justify-start">
             <button 
               onClick={onNavigateToAssignments}
-              className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all active:scale-95 shadow-lg"
+              className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all active:scale-95 shadow-lg text-sm md:text-base"
             >
               My Assignments
             </button>
             <button 
               onClick={onNavigateToSchedule}
-              className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95"
+              className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95 text-sm md:text-base"
             >
               View Schedule
+            </button>
+            <button 
+              onClick={onNavigateToLessonPlan}
+              className="px-6 py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 text-sm md:text-base"
+            >
+              Lesson Plan
+            </button>
+            <button 
+              onClick={() => setShowQR(true)}
+              className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
+            >
+              <span>📱</span> My QR Code
             </button>
           </div>
         </div>
@@ -52,8 +67,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Quick Schedule Preview */}
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col">
-          <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+        <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col">
+          <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
             <span>📅</span> Morning Lineup
           </h3>
           <div className="space-y-4">
@@ -82,13 +97,13 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
 
         {/* Priority Assignments Summary */}
         <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+          <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
               <span>🚀</span> Priority Tasks
             </h3>
             <button 
               onClick={onNavigateToAssignments}
-              className="text-indigo-600 text-sm font-black hover:underline"
+              className="text-indigo-600 text-xs md:text-sm font-black hover:underline"
             >
               SEE ALL
             </button>
@@ -98,18 +113,18 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
               <div 
                 key={as.id} 
                 onClick={onNavigateToAssignments}
-                className="p-6 flex items-center justify-between hover:bg-slate-50/50 transition-all cursor-pointer group"
+                className="p-4 md:p-6 flex items-center justify-between hover:bg-slate-50/50 transition-all cursor-pointer group"
               >
-                <div className="flex items-center gap-6">
-                  <div className="w-12 h-12 flex items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
-                    <span className="text-xl">{as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📝'}</span>
+                <div className="flex items-center gap-4 md:gap-6">
+                  <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shrink-0">
+                    <span className="text-lg md:text-xl">{as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📝'}</span>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{as.title}</h4>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{as.title}</h4>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">DUE {new Date(as.date).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black rounded uppercase tracking-tighter">
+                <span className="px-2 md:px-3 py-1 bg-amber-100 text-amber-700 text-[8px] md:text-[10px] font-black rounded uppercase tracking-tighter shrink-0 ml-2">
                   {as.status}
                 </span>
               </div>
@@ -140,6 +155,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
           </div>
         ))}
       </div>
+
+      {showQR && <QRGenerator student={student} onClose={() => setShowQR(false)} />}
     </div>
   );
 };

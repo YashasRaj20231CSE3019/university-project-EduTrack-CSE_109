@@ -1,48 +1,74 @@
 
 # EduTrack: Smart Curriculum & Attendance
 
-This application is set up to run in an isolated Python virtual environment for local development and testing.
+EduTrack is a modern, full-stack education management system designed to streamline classroom operations. It features AI-powered lesson planning, secure QR-based attendance tracking, and persistent data storage using SQLite.
 
-## Prerequisites
+## 🚀 Features
 
-- Python 3.8 or higher
-- Browser (Chrome/Edge/Firefox)
+- **Teacher Dashboard:** Comprehensive overview of class attendance, upcoming activities, and student performance.
+- **Student Dashboard:** Personalized view for students to track their schedule, assignments, and academic progress.
+- **AI Lesson Planner:** Generate creative and structured lesson plans using Google Gemini AI integration.
+- **QR Attendance:** Secure, time-sensitive QR code system for touchless attendance marking.
+- **Persistent Storage:** Full SQLite database integration ensures all data is saved permanently.
+- **Responsive Design:** Fully optimized for mobile, tablet, and desktop devices using Tailwind CSS.
 
-## Setup and Run
+## 🛠️ Tech Stack
 
-To set up the environment and start the application:
+- **Frontend:** React 18, Vite, Tailwind CSS, Lucide Icons, Recharts.
+- **Backend:** Node.js, Express, JWT (for secure QR tokens).
+- **Database:** SQLite (via `better-sqlite3`).
+- **AI:** Google Gemini API (`@google/genai`).
 
-1. **Create the Virtual Environment:**
-   ```bash
-   python -m venv venv
-   ```
+## 📋 Prerequisites
 
-2. **Activate the Environment:**
-   - **Windows:**
-     ```bash
-     .\venv\Scripts\activate
-     ```
-   - **macOS/Linux:**
-     ```bash
-     source venv/bin/activate
-     ```
+- **Node.js:** version 18.0.0 or higher.
+- **npm:** usually comes with Node.js.
 
-3. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+## ⚙️ Setup and Installation
 
-4. **Start the Server:**
-   ```bash
-   python server.py
-   ```
+### 1. Clone and Install Dependencies
 
-5. **Access the App:**
-   Open [http://localhost:8000](http://localhost:8000) in your browser.
+Open your terminal (Mac/Linux) or Command Prompt/PowerShell (Windows) and run:
 
-## Features
+```bash
+# Install all required packages
+npm install
+```
 
-- **Teacher View:** Manage attendance, plan activities using Gemini AI, and track student progress.
-- **Student View:** View schedule, track assignment status, and monitor grades.
-- **AI Integration:** Lesson planning and activity suggestions powered by Google Gemini.
-- **Responsive UI:** Built with React and Tailwind CSS for a seamless experience across devices.
+### 2. Environment Configuration
+
+Create a `.env` file in the root directory and add your Gemini API key:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+JWT_SECRET=your_random_secret_string
+```
+
+### 3. Run the Application
+
+#### **macOS / Linux**
+```bash
+# Start the development server
+npm run dev
+```
+
+#### **Windows**
+```bash
+# Start the development server
+npm run dev
+```
+
+The application will be accessible at [http://localhost:3000](http://localhost:3000).
+
+## 📂 Project Structure
+
+- `/src`: React frontend components and logic.
+- `/services`: API and AI service integrations.
+- `server.ts`: Express server and API endpoints.
+- `db.ts`: SQLite database initialization and seeding.
+- `constants.tsx`: Initial mock data and system constants.
+
+## 🛡️ Security
+
+- QR tokens are signed with JWT and expire after 30 seconds to prevent replay attacks.
+- Sensitive API keys are managed via environment variables.
