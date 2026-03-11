@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Student, AttendanceRecord, User } from '../types';
 import QRScanner from './QRScanner';
+import { exportToCSV } from '../src/utils/csvExport';
 
 interface AttendanceSheetProps {
   students: Student[];
@@ -109,6 +110,19 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
     setTimeLeft(600);
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Student ID', 'Name', 'Email', 'Grade', 'Status', 'Date'];
+    const rows = students.map(s => [
+      s.id,
+      s.name,
+      s.email,
+      s.grade,
+      selectedIds.includes(s.id) ? 'Present' : 'Absent',
+      today
+    ]);
+    exportToCSV(`attendance_${today}.csv`, headers, rows);
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -174,6 +188,13 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
               ))}
             </select>
           </div>
+
+          <button 
+            onClick={handleExportCSV}
+            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-black rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
+          >
+            <span>📥</span> EXPORT CSV
+          </button>
 
           <button 
             onClick={() => setShowScanner(true)}

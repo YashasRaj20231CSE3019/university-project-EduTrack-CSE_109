@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { generateActivityIdeas } from '../services/geminiService';
 import { ActivitySuggestion, Activity } from '../types';
+import { exportToCSV } from '../src/utils/csvExport';
 
 interface ActivityPlannerProps {
   activities: Activity[];
@@ -48,6 +49,21 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
     };
     onAddActivity(newActivity);
     setSuggestions(prev => prev.filter(item => item !== s));
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['Activity ID', 'Title', 'Subject', 'Description', 'Duration', 'Status', 'Learning Objectives', 'Materials'];
+    const rows = activities.map(a => [
+      a.id,
+      a.title,
+      a.subject,
+      a.description,
+      a.duration,
+      a.status,
+      a.learningObjectives.join('; '),
+      a.materials.join('; ')
+    ]);
+    exportToCSV(`curriculum_progress_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
   };
 
   const handleManualSubmit = (e: React.FormEvent) => {
@@ -206,7 +222,15 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
         <div className="space-y-6">
           <div className="flex items-center justify-between px-4">
              <h3 className="text-2xl font-black text-slate-800">Active Curriculum</h3>
-             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activities.length} PLANNED</span>
+             <div className="flex items-center gap-4">
+               <button 
+                onClick={handleExportCSV}
+                className="text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-2"
+               >
+                 <span>📥</span> EXPORT REPORT
+               </button>
+               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activities.length} PLANNED</span>
+             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

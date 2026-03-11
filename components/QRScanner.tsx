@@ -18,12 +18,20 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   useEffect(() => {
+    // Ensure the container is empty before rendering to prevent double UI
+    const container = document.getElementById("qr-reader");
+    if (container) {
+      container.innerHTML = "";
+    }
+
     const scanner = new Html5QrcodeScanner(
       "qr-reader",
       { 
         fps: 10, 
         qrbox: { width: 250, height: 250 },
-        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
+        rememberLastUsedCamera: true,
+        showTorchButtonIfSupported: true
       },
       /* verbose= */ false
     );
@@ -33,7 +41,9 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(err => console.error("Failed to clear scanner", err));
+        scannerRef.current.clear().catch(err => {
+          console.warn("Failed to clear scanner on unmount", err);
+        });
       }
     };
   }, []);
@@ -80,23 +90,26 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
-        <div className="p-10 bg-indigo-600 text-white relative text-center">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-2xl rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden flex flex-col max-h-[95vh]">
+        <div className="p-6 md:p-10 bg-indigo-600 text-white relative text-center shrink-0">
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-xl transition-all"
+            className="absolute top-4 right-4 md:top-6 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+            aria-label="Close scanner"
           >
-            ×
+            <span className="text-2xl md:text-3xl font-black">×</span>
           </button>
-          <div className="w-20 h-20 bg-white/20 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6">📷</div>
-          <h3 className="text-3xl font-black mb-2">Attendance Scanner</h3>
-          <p className="text-sm font-medium opacity-80">Scan student QR codes to mark attendance</p>
+          
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-2xl md:rounded-[2rem] flex items-center justify-center text-3xl md:text-4xl mx-auto mb-4 md:mb-6">📷</div>
+          <h3 className="text-2xl md:text-3xl font-black mb-1 md:mb-2">Attendance Scanner</h3>
+          <p className="text-xs md:text-sm font-medium opacity-80">Scan student QR codes to mark attendance</p>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
         </div>
 
-        <div className="p-10 space-y-8">
-          <div className="relative rounded-[2.5rem] overflow-hidden border-4 border-slate-100 bg-slate-50 shadow-inner">
-            <div id="qr-reader" className="w-full"></div>
+        <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto">
+          <div className="relative rounded-[2.5rem] bg-slate-50 shadow-inner border-4 border-slate-100">
+            <div id="qr-reader" className="w-full overflow-hidden rounded-[2.2rem]"></div>
             
             {(isVerifying || successMessage || error) && (
               <div className="absolute inset-0 z-10 flex items-center justify-center p-8 bg-white/90 backdrop-blur-sm animate-in fade-in duration-300">
