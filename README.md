@@ -44,21 +44,56 @@ GEMINI_API_KEY=your_api_key_here
 JWT_SECRET=your_random_secret_string
 ```
 
-### 3. Run the Application
+### 3. Run the Application (Node.js - Recommended)
+
+#### **macOS / Linux / Windows**
+```bash
+# Start the full-stack development server
+npm run dev
+```
+The application will be accessible at [http://localhost:3000](http://localhost:3000).
+
+---
+
+### 🐍 Python Local Setup (Alternative Static Server)
+
+If you prefer to run the static version of the app using Python and a virtual environment (`venv`):
 
 #### **macOS / Linux**
 ```bash
-# Start the development server
-npm run dev
+# 1. Create a virtual environment
+python3 -m venv venv
+
+# 2. Activate the virtual environment
+source venv/bin/activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run the server
+python server.py
 ```
 
 #### **Windows**
 ```bash
-# Start the development server
-npm run dev
-```
+# 1. Create a virtual environment
+python -m venv venv
 
-The application will be accessible at [http://localhost:3000](http://localhost:3000).
+# 2. Activate the virtual environment
+# In Command Prompt:
+venv\Scripts\activate
+# In PowerShell:
+.\venv\Scripts\Activate.ps1
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Run the server
+python server.py
+```
+The static server will be accessible at [http://localhost:8000](http://localhost:8000).
+
+---
 
 ## 📂 Project Structure
 
