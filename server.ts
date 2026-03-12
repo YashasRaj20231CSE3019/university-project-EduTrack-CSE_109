@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 initDb();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "edutrack-secret-key-123";
 
 app.use(cors());
@@ -170,7 +170,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static(path.join(__dirname, "dist")));
-    app.get("*", (req, res) => {
+    app.get("*all", (req, res) => {
       res.sendFile(path.join(__dirname, "dist", "index.html"));
     });
   }
