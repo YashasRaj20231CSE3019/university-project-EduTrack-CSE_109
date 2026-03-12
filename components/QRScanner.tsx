@@ -48,9 +48,12 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
     };
   }, []);
 
+  const isVerifyingRef = useRef(false);
+
   const onScan = async (decodedText: string) => {
-    if (isVerifying) return;
+    if (isVerifyingRef.current) return;
     
+    isVerifyingRef.current = true;
     setScanResult(decodedText);
     setIsVerifying(true);
     setError(null);
@@ -70,17 +73,20 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
         setTimeout(() => {
           setScanResult(null);
           setIsVerifying(false);
+          isVerifyingRef.current = false;
           setSuccessMessage(null);
         }, 2000);
       } else {
         setError(data.message);
         setIsVerifying(false);
+        isVerifyingRef.current = false;
         setScanResult(null);
       }
     } catch (err: any) {
       console.error('Verification failed:', err);
       setError(err.message || 'Network error. Please try again.');
       setIsVerifying(false);
+      isVerifyingRef.current = false;
       setScanResult(null);
     }
   };

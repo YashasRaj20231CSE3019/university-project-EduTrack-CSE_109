@@ -73,7 +73,8 @@ app.post("/api/attendance", (req, res) => {
     VALUES (?, ?) 
     ON CONFLICT(date) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
   `);
-  upsert.run(date, JSON.stringify(presentStudentIds));
+  const normalizedDate = date.split('T')[0];
+  upsert.run(normalizedDate, JSON.stringify(presentStudentIds));
   res.json({ success: true });
 });
 
@@ -142,8 +143,9 @@ app.post("/api/qr/verify", (req, res) => {
     
     // Mark attendance for today
     const today = new Date().toISOString().split('T')[0];
-    const record = db.prepare('SELECT * FROM attendance WHERE date LIKE ?').get(`${today}%`) as any;
+    const record = db.prepare('SELECT * FROM attendance WHERE date = ?').get(today) as any;
     let presentIds = record ? JSON.parse(record.presentStudentIds) : [];
+    
     if (!presentIds.includes(decoded.studentId)) {
       presentIds.push(decoded.studentId);
       const upsert = db.prepare(`
@@ -151,7 +153,7 @@ app.post("/api/qr/verify", (req, res) => {
         VALUES (?, ?) 
         ON CONFLICT(date) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
       `);
-      upsert.run(new Date().toISOString(), JSON.stringify(presentIds));
+      upsert.run(today, JSON.stringify(presentIds));
     }
 
     res.json({ success: true, studentId: decoded.studentId });

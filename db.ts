@@ -100,7 +100,8 @@ export function initDb() {
       }
 
       for (const record of INITIAL_ATTENDANCE) {
-        insertAttendance.run(record.date, JSON.stringify(record.presentStudentIds));
+        const normalizedDate = record.date.split('T')[0];
+        insertAttendance.run(normalizedDate, JSON.stringify(record.presentStudentIds));
       }
 
       for (const entry of MOCK_SCHEDULE) {
