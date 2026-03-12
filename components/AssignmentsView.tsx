@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Student, Assignment } from '../types';
 import FileUpload from './FileUpload';
+import { apiService } from '../services/apiService';
 
 interface AssignmentsViewProps {
   student: Student;
@@ -37,22 +38,38 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
     setSelectedFile(null);
   };
 
-  const handleSubmitWork = () => {
+  const handleSubmitWork = async () => {
     if (!selectedAssignment) return;
     
     setIsSubmitting(true);
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      let submissionFileUrl = undefined;
+      let submissionFileName = undefined;
+
+      if (selectedFile) {
+        const uploadRes = await apiService.uploadFile(selectedFile);
+        submissionFileUrl = uploadRes.url;
+        submissionFileName = uploadRes.filename;
+      }
+
       onUpdateAssignment(selectedAssignment.id, {
         status: 'submitted',
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        submissionText: submissionText,
+        submissionFile: submissionFileUrl || submissionFileName // Use URL if available
       });
+
       setIsSubmitting(false);
       setSubmissionMode(false);
       setSelectedAssignment(null);
       setSelectedFile(null);
+      setSubmissionText('');
       alert('Assignment submitted successfully!');
-    }, 1200);
+    } catch (error) {
+      console.error('Error submitting work:', error);
+      alert('Failed to submit assignment. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -236,9 +253,35 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                  <>
                    <div>
                       <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Task Description</h4>
-                      <p className="text-slate-600 leading-relaxed font-medium">
+                      <p className="text-slate-600 leading-relaxed font-medium mb-8">
                         {selectedAssignment.description || "Review the chapters covered in class and provide a detailed analysis of the practical application of the concepts discussed. Use diagrams where necessary."}
                       </p>
+
+                      {selectedAssignment.status !== 'pending' && (
+                        <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-4 mb-8">
+                          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Submission</h4>
+                          <div className="p-4 bg-white rounded-xl border border-slate-200 text-xs font-medium text-slate-600 whitespace-pre-wrap">
+                            {selectedAssignment.submissionText || "No text provided."}
+                          </div>
+                          {selectedAssignment.submissionFile && (
+                            <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
+                              <span className="text-xl">📄</span>
+                              <div className="flex-1 overflow-hidden">
+                                <p className="text-xs font-black text-slate-800 truncate">{selectedAssignment.submissionFile.split('/').pop()}</p>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase">Uploaded File</p>
+                              </div>
+                              <a 
+                                onClick={(e) => e.stopPropagation()}
+                                href={selectedAssignment.submissionFile}
+                                download
+                                className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[8px] font-black uppercase hover:bg-indigo-100 transition-all flex items-center justify-center"
+                              >
+                                DOWNLOAD
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
                    </div>
                    
                    <div className="flex gap-4">

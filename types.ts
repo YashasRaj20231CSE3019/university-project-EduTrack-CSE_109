@@ -18,6 +18,8 @@ export interface Assignment {
   date: string;
   status: 'submitted' | 'graded' | 'pending';
   description?: string;
+  submissionText?: string;
+  submissionFile?: string;
 }
 
 export interface Student {

@@ -31,6 +31,8 @@ export function initDb() {
       grade TEXT,
       date TEXT,
       status TEXT,
+      submissionText TEXT,
+      submissionFile TEXT,
       FOREIGN KEY (studentId) REFERENCES students(id)
     );
 
@@ -61,6 +63,18 @@ export function initDb() {
       status TEXT
     );
   `);
+
+  // Migration: Add submissionText and submissionFile if they don't exist
+  try {
+    db.exec("ALTER TABLE assignments ADD COLUMN submissionText TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
+  try {
+    db.exec("ALTER TABLE assignments ADD COLUMN submissionFile TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
 
   // Seed data if empty
   const studentCount = db.prepare('SELECT count(*) as count FROM students').get() as { count: number };

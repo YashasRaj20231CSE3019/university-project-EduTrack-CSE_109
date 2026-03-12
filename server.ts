@@ -4,11 +4,31 @@ import { createServer as createViteServer } from "vite";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
+import multer from "multer";
 import { fileURLToPath } from "url";
 import db, { initDb } from "./db.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage });
 
 // Initialize Database
 initDb();
@@ -19,6 +39,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "edutrack-secret-key-123";
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(uploadsDir));
 
 // In-memory store for used tokens to prevent replay attacks
 const usedTokens = new Set<string>();
@@ -116,10 +137,17 @@ app.patch("/api/activities/:id", (req, res) => {
 // Assignments API
 app.patch("/api/assignments/:id", (req, res) => {
   const { id } = req.params;
-  const { grade, status } = req.body;
+  const { grade, status, submissionText, submissionFile } = req.body;
   
-  const update = db.prepare('UPDATE assignments SET grade = ?, status = ? WHERE id = ?');
-  const result = update.run(grade, status, id);
+  const update = db.prepare(`
+    UPDATE assignments 
+    SET grade = COALESCE(?, grade), 
+        status = COALESCE(?, status),
+        submissionText = COALESCE(?, submissionText),
+        submissionFile = COALESCE(?, submissionFile)
+    WHERE id = ?
+  `);
+  const result = update.run(grade || null, status || null, submissionText || null, submissionFile || null, id);
   
   if (result.changes === 0) return res.status(404).json({ message: "Assignment not found" });
   res.json({ success: true });
@@ -130,6 +158,15 @@ app.get("/api/qr/token/:studentId", (req, res) => {
   const { studentId } = req.params;
   const token = jwt.sign({ studentId, timestamp: Date.now() }, JWT_SECRET, { expiresIn: "30s" });
   res.json({ token });
+});
+
+// File Upload API
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+  const fileUrl = `/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl, filename: req.file.originalname });
 });
 
 app.post("/api/qr/verify", (req, res) => {

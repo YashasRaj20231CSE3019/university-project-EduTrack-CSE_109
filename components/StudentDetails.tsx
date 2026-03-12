@@ -268,6 +268,37 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
              </div>
              
              <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto">
+                {selectedAssignment.status !== 'pending' && (
+                  <div className="space-y-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+                    <div>
+                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Student Submission</h4>
+                      <div className="p-4 bg-white rounded-xl border border-slate-200 text-xs md:text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                        {selectedAssignment.submissionText || "No text submission provided."}
+                      </div>
+                    </div>
+                    
+                    {selectedAssignment.submissionFile && (
+                      <div>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Attached File</h4>
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
+                          <span className="text-xl">📄</span>
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-xs font-black text-slate-800 truncate">{selectedAssignment.submissionFile}</p>
+                            <p className="text-[8px] font-bold text-slate-400 uppercase">Student Uploaded File</p>
+                          </div>
+                          <a 
+                            href={selectedAssignment.submissionFile}
+                            download
+                            className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-[8px] font-black uppercase hover:bg-indigo-100 transition-all flex items-center justify-center"
+                          >
+                            DOWNLOAD
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div>
                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Assign Final Grade</label>
                    <div className="flex gap-4">

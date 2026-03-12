@@ -1,5 +1,5 @@
 
-import { Student, AttendanceRecord, ScheduleEntry, Activity } from '../types';
+import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment } from '../types';
 
 const API_BASE = '/api';
 
@@ -61,13 +61,24 @@ export const apiService = {
     if (!res.ok) throw new Error('Failed to update activity');
   },
 
-  async updateAssignment(id: string, grade: string, status: string): Promise<void> {
+  async updateAssignment(id: string, updates: Partial<Assignment>): Promise<void> {
     const res = await fetch(`${API_BASE}/assignments/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ grade, status })
+      body: JSON.stringify(updates)
     });
     if (!res.ok) throw new Error('Failed to update assignment');
+  },
+
+  async uploadFile(file: File): Promise<{ url: string; filename: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) throw new Error('Failed to upload file');
+    return res.json();
   },
 
   async getQRToken(studentId: string): Promise<string> {

@@ -88,9 +88,7 @@ const App: React.FC = () => {
 
   const handleUpdateAssignment = async (studentId: string, assignmentId: string, updates: Partial<Assignment>) => {
     try {
-      if (updates.grade && updates.status) {
-        await apiService.updateAssignment(assignmentId, updates.grade, updates.status);
-      }
+      await apiService.updateAssignment(assignmentId, updates);
       
       setStudents(prevStudents => {
         const updatedStudents = prevStudents.map(s => {
