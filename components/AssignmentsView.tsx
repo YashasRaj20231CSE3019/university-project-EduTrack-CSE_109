@@ -195,9 +195,10 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                   setSelectedAssignment(null);
                   setSubmissionMode(false);
                 }}
-                className="absolute top-4 md:top-6 right-4 md:right-6 w-8 h-8 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-lg md:text-xl transition-all"
+                className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+                aria-label="Close assignment"
                >
-                 ×
+                 <span className="text-2xl md:text-3xl font-black">×</span>
                </button>
                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">{selectedAssignment.subject}</p>
                <h3 className="text-xl md:text-3xl font-black mb-4">{selectedAssignment.title}</h3>

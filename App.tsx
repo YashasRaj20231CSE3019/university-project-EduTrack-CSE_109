@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
@@ -11,20 +12,21 @@ import StudentDirectory from './components/StudentDirectory';
 import ScheduleView from './components/ScheduleView';
 import AssignmentsView from './components/AssignmentsView';
 import LessonPlanner from './components/LessonPlanner';
-import { View, Student, Activity, AttendanceRecord, User, Assignment, Notification, ScheduleEntry } from './types';
+import { Student, Activity, AttendanceRecord, User, Assignment, Notification, ScheduleEntry } from './types';
 import { INITIAL_NOTIFICATIONS } from './constants';
 import { apiService } from './services/apiService';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<View>('dashboard');
   const [students, setStudents] = useState<Student[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS as any);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,12 +123,12 @@ const App: React.FC = () => {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    setCurrentView('dashboard');
+    navigate('/');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setSelectedStudentId(null);
+    navigate('/login');
   };
 
   if (loading) {
@@ -140,99 +142,99 @@ const App: React.FC = () => {
     );
   }
 
+  if (!currentUser && location.pathname !== '/login') {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (currentUser && location.pathname === '/login') {
+    return <Navigate to="/" replace />;
+  }
+
   if (!currentUser) {
     return <LoginPage students={students} onLogin={handleLogin} />;
   }
 
-  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const TeacherRoutes = () => (
+    <Routes>
+      <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} />} />
+      <Route path="/attendance" element={<AttendanceSheet students={students} onSave={handleSaveAttendance} user={currentUser} />} />
+      <Route path="/schedule" element={<ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" />} />
+      <Route path="/students" element={<StudentDirectory students={students} />} />
+      <Route path="/students/:id" element={
+        <StudentDetailsWrapper 
+          students={students} 
+          attendance={attendance} 
+          onUpdateAssignment={handleUpdateAssignment}
+          isTeacherView={true}
+        />
+      } />
+      <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={handleAddActivity} onUpdateActivity={handleUpdateActivity} />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 
-  const renderView = () => {
-    // Student specific views
-    if (currentUser.role === 'student') {
-      const student = currentUser.studentData!;
-      switch (currentView) {
-        case 'dashboard':
-          return (
-            <StudentDashboard 
-              student={student} 
-              attendance={attendance} 
-              onNavigateToAssignments={() => setCurrentView('assignments')}
-              onNavigateToSchedule={() => setCurrentView('schedule')}
-              onNavigateToLessonPlan={() => setCurrentView('lesson-planner')}
-            />
-          );
-        case 'schedule':
-          return <ScheduleView schedule={schedule} title="My Timetable" />;
-        case 'assignments':
-          return <AssignmentsView student={student} onUpdateAssignment={(aId, updates) => handleUpdateAssignment(student.id, aId, updates)} />;
-        case 'lesson-planner':
-          return <LessonPlanner student={student} activities={activities} />;
-        case 'my-progress':
-          return (
-            <StudentDetails 
-              student={student} 
-              attendanceHistory={attendance} 
-              onBack={() => setCurrentView('dashboard')} 
-            />
-          );
-        default:
-          return (
-            <StudentDashboard 
-              student={student} 
-              attendance={attendance} 
-              onNavigateToAssignments={() => setCurrentView('assignments')}
-              onNavigateToSchedule={() => setCurrentView('schedule')}
-              onNavigateToLessonPlan={() => setCurrentView('lesson-planner')}
-            />
-          );
-      }
-    }
-
-    // Teacher specific views
-    switch (currentView) {
-      case 'dashboard':
-        return <Dashboard students={students} attendance={attendance} activities={activities} />;
-      case 'attendance':
-        return <AttendanceSheet students={students} onSave={handleSaveAttendance} user={currentUser} />;
-      case 'schedule':
-        return <ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" />;
-      case 'students':
-        if (selectedStudent) {
-          return (
-            <StudentDetails 
-              student={selectedStudent} 
-              attendanceHistory={attendance}
-              onBack={() => setSelectedStudentId(null)} 
-              onUpdateAssignment={(aId, updates) => handleUpdateAssignment(selectedStudent.id, aId, updates)}
-              isTeacherView={true}
-            />
-          );
-        }
-        return (
-          <StudentDirectory 
-            students={students} 
-            onSelectStudent={setSelectedStudentId} 
+  const StudentRoutes = () => {
+    const student = currentUser.studentData!;
+    return (
+      <Routes>
+        <Route path="/" element={
+          <StudentDashboard 
+            student={student} 
+            attendance={attendance} 
           />
-        );
-      case 'planner':
-        return <ActivityPlanner activities={activities} onAddActivity={handleAddActivity} onUpdateActivity={handleUpdateActivity} />;
-      default:
-        return <Dashboard students={students} attendance={attendance} activities={activities} />;
-    }
+        } />
+        <Route path="/schedule" element={<ScheduleView schedule={schedule} title="My Timetable" />} />
+        <Route path="/assignments" element={<AssignmentsView student={student} onUpdateAssignment={(aId, updates) => handleUpdateAssignment(student.id, aId, updates)} />} />
+        <Route path="/lesson-planner" element={<LessonPlanner student={student} activities={activities} />} />
+        <Route path="/my-progress" element={
+          <StudentDetails 
+            student={student} 
+            attendanceHistory={attendance} 
+            onBack={() => navigate('/')} 
+          />
+        } />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
   };
 
   return (
     <Layout 
-      currentView={currentView} 
-      onViewChange={setCurrentView}
       user={currentUser}
       onLogout={handleLogout}
       notifications={notifications}
       onMarkAsRead={handleMarkAsRead}
       onClearNotifications={handleClearNotifications}
     >
-      {renderView()}
+      {currentUser.role === 'teacher' ? <TeacherRoutes /> : <StudentRoutes />}
     </Layout>
+  );
+};
+
+// Helper component to handle student ID from URL
+import { useParams } from 'react-router-dom';
+const StudentDetailsWrapper: React.FC<{
+  students: Student[];
+  attendance: AttendanceRecord[];
+  onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => void;
+  isTeacherView: boolean;
+}> = ({ students, attendance, onUpdateAssignment, isTeacherView }) => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const student = students.find(s => s.id === id);
+
+  if (!student) {
+    return <Navigate to="/students" replace />;
+  }
+
+  return (
+    <StudentDetails 
+      student={student} 
+      attendanceHistory={attendance}
+      onBack={() => navigate('/students')} 
+      onUpdateAssignment={(aId, updates) => onUpdateAssignment(student.id, aId, updates)}
+      isTeacherView={isTeacherView}
+    />
   );
 };
 

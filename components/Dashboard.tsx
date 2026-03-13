@@ -207,8 +207,8 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
       </div>
       {/* Weekly Report Modal */}
       {showReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-auto">
             <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
               <div className="relative z-10 flex justify-between items-center">
                 <div>
@@ -217,9 +217,10 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
                 </div>
                 <button 
                   onClick={() => setShowReport(false)}
-                  className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                  className="absolute top-4 right-4 z-[100] w-10 h-10 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+                  aria-label="Close report"
                 >
-                  ✕
+                  <span className="text-2xl font-black">×</span>
                 </button>
               </div>
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
@@ -249,8 +250,8 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
 
       {/* Weekly Calendar Modal */}
       {showCalendar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-auto">
             <div className="bg-slate-800 p-8 text-white flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-black">Weekly Class Calendar 📅</h3>
@@ -258,9 +259,10 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
               </div>
               <button 
                 onClick={() => setShowCalendar(false)}
-                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                className="absolute top-4 right-4 z-[100] w-10 h-10 bg-white text-slate-800 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+                aria-label="Close calendar"
               >
-                ✕
+                <span className="text-2xl font-black">×</span>
               </button>
             </div>
             <div className="p-8 overflow-x-auto">

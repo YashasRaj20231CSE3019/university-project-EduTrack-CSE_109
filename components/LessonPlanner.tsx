@@ -68,12 +68,12 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
                 value={curriculumQuery}
                 onChange={(e) => setCurriculumQuery(e.target.value)}
                 placeholder="Ask anything about your syllabus... (e.g., 'What will I learn in Science this term?' or 'Explain the key concepts of Algebra for my grade.')"
-                className="w-full p-6 bg-slate-50 border-2 border-slate-100 rounded-[2rem] text-slate-700 font-medium focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none transition-all min-h-[120px] resize-none"
+                className="w-full p-6 pb-20 md:pb-6 bg-slate-50 border-2 border-slate-100 rounded-[2rem] text-slate-700 font-medium focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none transition-all min-h-[180px] md:min-h-[120px] resize-none"
               />
               <button
                 type="submit"
                 disabled={isAskingCurriculum || !curriculumQuery.trim()}
-                className="absolute bottom-4 right-4 px-8 py-3 bg-emerald-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50"
+                className="absolute bottom-4 right-4 px-6 md:px-8 py-3 bg-emerald-600 text-white rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50"
               >
                 {isAskingCurriculum ? 'Thinking...' : 'Ask Assistant'}
               </button>
@@ -223,9 +223,10 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
                 </div>
                 <button 
                   onClick={() => setShowModal(false)}
-                  className="w-8 h-8 md:w-10 md:h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors"
+                  className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+                  aria-label="Close explanation"
                 >
-                  ✕
+                  <span className="text-2xl md:text-3xl font-black">×</span>
                 </button>
               </div>
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>

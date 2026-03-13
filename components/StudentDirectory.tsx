@@ -1,15 +1,16 @@
 
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Student } from '../types';
 
 interface StudentDirectoryProps {
   students: Student[];
-  onSelectStudent: (id: string) => void;
 }
 
-const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students, onSelectStudent }) => {
+const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [gradeFilter, setGradeFilter] = useState('All Grades');
+  const navigate = useNavigate();
 
   const grades = useMemo(() => {
     const uniqueGrades = Array.from(new Set(students.map(s => s.grade)));
@@ -64,7 +65,7 @@ const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students, onSelectS
           {filteredStudents.map(s => (
             <div 
               key={s.id} 
-              onClick={() => onSelectStudent(s.id)}
+              onClick={() => navigate(`/students/${s.id}`)}
               className="group bg-white border border-slate-200 rounded-[2rem] p-5 md:p-6 hover:shadow-2xl hover:shadow-indigo-100 hover:border-indigo-300 transition-all duration-300 cursor-pointer relative flex flex-col items-center text-center overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-slate-50 rounded-bl-[3rem] md:rounded-bl-[4rem] group-hover:bg-indigo-50 transition-colors"></div>

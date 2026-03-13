@@ -46,14 +46,15 @@ const QRGenerator: React.FC<QRGeneratorProps> = ({ student, onClose }) => {
   }, [student.id]);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500">
+    <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 my-auto">
         <div className="p-10 bg-indigo-600 text-white relative text-center">
           <button 
             onClick={onClose}
-            className="absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-xl transition-all"
+            className="absolute top-4 right-4 md:top-6 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+            aria-label="Close QR code"
           >
-            ×
+            <span className="text-2xl md:text-3xl font-black">×</span>
           </button>
           <div className="w-20 h-20 bg-white/20 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6">📱</div>
           <h3 className="text-3xl font-black mb-2">My Attendance QR</h3>

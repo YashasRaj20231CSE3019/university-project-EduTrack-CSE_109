@@ -255,9 +255,10 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
              <div className="p-6 md:p-10 bg-indigo-600 text-white relative shrink-0">
                 <button 
                   onClick={() => setSelectedAssignment(null)}
-                  className="absolute top-4 md:top-6 right-4 md:right-6 w-8 h-8 md:w-10 md:h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center font-bold text-lg md:text-xl transition-all"
+                  className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+                  aria-label="Close grading"
                 >
-                  ×
+                  <span className="text-2xl md:text-3xl font-black">×</span>
                 </button>
                 <div className="flex items-center gap-3 mb-2">
                    <span className="px-3 py-1 bg-white/20 rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-widest border border-white/20">GRADING</span>

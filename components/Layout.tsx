@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
-import { View, User, Notification } from '../types';
+import { Link, useLocation } from 'react-router-dom';
+import { User, Notification } from '../types';
 
 interface LayoutProps {
-  currentView: View;
-  onViewChange: (view: View) => void;
   user: User;
   onLogout: () => void;
   notifications: Notification[];
@@ -14,8 +13,6 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ 
-  currentView, 
-  onViewChange, 
   user, 
   onLogout, 
   notifications,
@@ -25,25 +22,33 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const teacherNavItems = [
-    { id: 'dashboard' as View, label: 'Overview', icon: '📊' },
-    { id: 'attendance' as View, label: 'Attendance', icon: '📝' },
-    { id: 'students' as View, label: 'Students', icon: '👥' },
-    { id: 'planner' as View, label: 'Activity Planner', icon: '🪄' },
-    { id: 'schedule' as View, label: 'Class Schedule', icon: '📅' },
+    { id: '/', label: 'Overview', icon: '📊' },
+    { id: '/attendance', label: 'Attendance', icon: '📝' },
+    { id: '/students', label: 'Students', icon: '👥' },
+    { id: '/planner', label: 'Activity Planner', icon: '🪄' },
+    { id: '/schedule', label: 'Class Schedule', icon: '📅' },
   ];
 
   const studentNavItems = [
-    { id: 'dashboard' as View, label: 'My Dashboard', icon: '🏠' },
-    { id: 'lesson-planner' as View, label: 'Lesson Plan', icon: '📖' },
-    { id: 'schedule' as View, label: 'My Timetable', icon: '📅' },
-    { id: 'assignments' as View, label: 'Assignments', icon: '📚' },
-    { id: 'my-progress' as View, label: 'Grades & Progress', icon: '📈' },
+    { id: '/', label: 'My Dashboard', icon: '🏠' },
+    { id: '/lesson-planner', label: 'Lesson Plan', icon: '📖' },
+    { id: '/schedule', label: 'My Timetable', icon: '📅' },
+    { id: '/assignments', label: 'Assignments', icon: '📚' },
+    { id: '/my-progress', label: 'Grades & Progress', icon: '📈' },
   ];
 
   const navItems = user.role === 'teacher' ? teacherNavItems : studentNavItems;
+
+  const getActiveLabel = () => {
+    const activeItem = navItems.find(item => 
+      item.id === '/' ? location.pathname === '/' : location.pathname.startsWith(item.id)
+    );
+    return activeItem ? activeItem.label : 'EduTrack';
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-['Inter'] relative">
@@ -61,11 +66,9 @@ const Layout: React.FC<LayoutProps> = ({
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="px-6 py-8 flex items-center justify-between">
-          <button 
-            onClick={() => {
-              onViewChange('dashboard');
-              setIsSidebarOpen(false);
-            }}
+          <Link 
+            to="/"
+            onClick={() => setIsSidebarOpen(false)}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-indigo-200">
@@ -74,7 +77,7 @@ const Layout: React.FC<LayoutProps> = ({
             <h1 className="text-xl font-bold tracking-tight text-slate-800">
               EduTrack
             </h1>
-          </button>
+          </Link>
           <button 
             onClick={() => setIsSidebarOpen(false)}
             className="lg:hidden p-2 text-slate-400 hover:text-slate-600"
@@ -85,25 +88,26 @@ const Layout: React.FC<LayoutProps> = ({
         
         <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
           <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Main Menu</p>
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                onViewChange(item.id);
-                setIsSidebarOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                currentView === item.id
-                  ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 shadow-sm'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
-              }`}
-            >
-              <span className={`text-lg transition-transform duration-200 ${currentView === item.id ? 'scale-110' : 'group-hover:scale-110'}`}>
-                {item.icon}
-              </span>
-              {item.label}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = item.id === '/' ? location.pathname === '/' : location.pathname.startsWith(item.id);
+            return (
+              <Link
+                key={item.id}
+                to={item.id}
+                onClick={() => setIsSidebarOpen(false)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  isActive
+                    ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
+                }`}
+              >
+                <span className={`text-lg transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                  {item.icon}
+                </span>
+                {item.label}
+              </Link>
+            );
+          })}
           
           <div className="pt-8">
             <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Account</p>
@@ -145,7 +149,7 @@ const Layout: React.FC<LayoutProps> = ({
             </button>
             <div className="flex flex-col">
               <h2 className="text-lg md:text-2xl font-bold text-slate-800 capitalize leading-none mb-1 truncate max-w-[150px] md:max-w-none">
-                {currentView.replace('-', ' ')}
+                {getActiveLabel()}
               </h2>
               <p className="text-[10px] md:text-xs font-medium text-slate-400 uppercase tracking-widest truncate">
                 {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -178,8 +182,11 @@ const Layout: React.FC<LayoutProps> = ({
                     className="fixed inset-0 z-20" 
                     onClick={() => setShowNotifications(false)}
                   ></div>
-                  <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-30 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                  <div 
+                    className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 z-[100] overflow-hidden origin-top-right"
+                    style={{ backgroundColor: '#ffffff', opacity: 1 }}
+                  >
+                    <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white" style={{ backgroundColor: '#ffffff' }}>
                       <h3 className="font-bold text-slate-800">Notifications</h3>
                       <button 
                         onClick={onClearNotifications}
@@ -188,16 +195,16 @@ const Layout: React.FC<LayoutProps> = ({
                         Clear All
                       </button>
                     </div>
-                    <div className="max-h-96 overflow-y-auto">
+                    <div className="max-h-96 overflow-y-auto bg-white" style={{ backgroundColor: '#ffffff' }}>
                       {notifications.length > 0 ? (
                         notifications.map((notif) => (
                           <div 
                             key={notif.id} 
                             onClick={() => {
                               onMarkAsRead(notif.id);
-                              // Optional: Navigate based on notification type
                             }}
-                            className={`p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors relative ${!notif.read ? 'bg-indigo-50/30' : ''}`}
+                            className={`p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors relative ${!notif.read ? 'bg-indigo-50' : 'bg-white'}`}
+                            style={{ backgroundColor: !notif.read ? '#f5f7ff' : '#ffffff' }}
                           >
                             {!notif.read && (
                               <div className="absolute top-4 right-4 w-2 h-2 bg-indigo-600 rounded-full"></div>
@@ -215,7 +222,7 @@ const Layout: React.FC<LayoutProps> = ({
                           </div>
                         ))
                       ) : (
-                        <div className="p-10 text-center">
+                        <div className="p-10 text-center bg-white" style={{ backgroundColor: '#ffffff' }}>
                           <span className="text-4xl block mb-3">📭</span>
                           <p className="text-sm font-bold text-slate-800">All caught up!</p>
                           <p className="text-xs text-slate-400 mt-1">No new notifications for you.</p>

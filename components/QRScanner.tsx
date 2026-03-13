@@ -96,8 +96,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-2xl rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden flex flex-col max-h-[95vh]">
+    <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 md:p-6 bg-slate-900/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-2xl rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden flex flex-col my-auto max-h-none md:max-h-[95vh]">
         <div className="p-6 md:p-10 bg-indigo-600 text-white relative text-center shrink-0">
           <button 
             onClick={onClose}

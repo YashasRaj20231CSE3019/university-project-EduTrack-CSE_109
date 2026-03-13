@@ -1,18 +1,17 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Student, AttendanceRecord } from '../types';
 import QRGenerator from './QRGenerator';
 
 interface StudentDashboardProps {
   student: Student;
   attendance: AttendanceRecord[];
-  onNavigateToAssignments: () => void;
-  onNavigateToSchedule: () => void;
-  onNavigateToLessonPlan: () => void;
 }
 
-const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance, onNavigateToAssignments, onNavigateToSchedule, onNavigateToLessonPlan }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance }) => {
   const [showQR, setShowQR] = useState(false);
+  const navigate = useNavigate();
   const myAttendance = attendance.filter(record => record.presentStudentIds.includes(student.id));
   const attendanceRate = attendance.length > 0 
     ? Math.round((myAttendance.length / attendance.length) * 100) 
@@ -29,19 +28,19 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
           <p className="text-indigo-100 text-sm md:text-lg mb-6">Your overall performance is looking great. You have {pendingAssignments.length} assignments needing attention.</p>
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center md:justify-start">
             <button 
-              onClick={onNavigateToAssignments}
+              onClick={() => navigate('/assignments')}
               className="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-all active:scale-95 shadow-lg text-sm md:text-base"
             >
               My Assignments
             </button>
             <button 
-              onClick={onNavigateToSchedule}
+              onClick={() => navigate('/schedule')}
               className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95 text-sm md:text-base"
             >
               View Schedule
             </button>
             <button 
-              onClick={onNavigateToLessonPlan}
+              onClick={() => navigate('/lesson-planner')}
               className="px-6 py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 text-sm md:text-base"
             >
               Lesson Plan
@@ -87,7 +86,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
                 </div>
              </div>
              <button 
-              onClick={onNavigateToSchedule}
+              onClick={() => navigate('/schedule')}
               className="w-full py-3 mt-4 text-indigo-600 text-xs font-black hover:bg-indigo-50 rounded-xl transition-all uppercase tracking-widest"
             >
               FULL TIMETABLE
@@ -102,7 +101,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
               <span>🚀</span> Priority Tasks
             </h3>
             <button 
-              onClick={onNavigateToAssignments}
+              onClick={() => navigate('/assignments')}
               className="text-indigo-600 text-xs md:text-sm font-black hover:underline"
             >
               SEE ALL
@@ -112,7 +111,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
             {pendingAssignments.slice(0, 3).map(as => (
               <div 
                 key={as.id} 
-                onClick={onNavigateToAssignments}
+                onClick={() => navigate('/assignments')}
                 className="p-4 md:p-6 flex items-center justify-between hover:bg-slate-50/50 transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-4 md:gap-6">
