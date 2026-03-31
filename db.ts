@@ -64,6 +64,21 @@ export function initDb() {
       materials TEXT,
       status TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS announcements (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      authorName TEXT NOT NULL,
+      priority TEXT DEFAULT 'normal',
+      targetRole TEXT DEFAULT 'all'
+    );
+
+    CREATE TABLE IF NOT EXISTS used_qr_tokens (
+      token TEXT PRIMARY KEY,
+      usedAt TEXT NOT NULL
+    );
   `);
 
   // Migration: Add submissionText and submissionFile if they don't exist
@@ -74,6 +89,11 @@ export function initDb() {
   }
   try {
     db.exec("ALTER TABLE assignments ADD COLUMN submissionFile TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
+  try {
+    db.exec("ALTER TABLE assignments ADD COLUMN comments TEXT;");
   } catch (e) {
     // Column might already exist
   }

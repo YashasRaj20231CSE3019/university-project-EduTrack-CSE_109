@@ -18,7 +18,9 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredAssignments = student.assignments.filter(as => {
+  const assignments = student?.assignments || [];
+
+  const filteredAssignments = assignments.filter(as => {
     const matchesFilter = filter === 'all' || as.status === filter;
     const matchesSearch = as.title.toLowerCase().includes(search.toLowerCase()) || 
                           as.subject.toLowerCase().includes(search.toLowerCase());
@@ -26,9 +28,9 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
   });
 
   const stats = {
-    total: student.assignments.length,
-    pending: student.assignments.filter(a => a.status === 'pending').length,
-    completed: student.assignments.filter(a => a.status !== 'pending').length,
+    total: assignments.length,
+    pending: assignments.filter(a => a.status === 'pending').length,
+    completed: assignments.filter(a => a.status !== 'pending').length,
   };
 
   const handleOpenAssignment = (as: Assignment) => {

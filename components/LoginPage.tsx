@@ -1,39 +1,41 @@
 
 import React, { useState } from 'react';
-import { Role, User, Student } from '../types';
+import { Role, User } from '../types';
+import { apiService } from '../services/apiService';
 
 interface LoginPageProps {
-  students: Student[];
   onLogin: (user: User) => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ students, onLogin }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [selectedRole, setSelectedRole] = useState<Role>('teacher');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
     
-    if (selectedRole === 'teacher') {
-      // Mock teacher login
+    try {
+      const data = await apiService.login(email, selectedRole);
+      const userId = data.user.userId || data.user.id;
+      const userRole = data.user.role || selectedRole;
+      
       onLogin({
-        id: 't-1',
-        name: 'Dr. Sarah Miller',
-        email: 'miller@school.edu',
-        role: 'teacher',
-        avatar: 'https://picsum.photos/seed/teacher/100/100'
+        id: userId,
+        name: data.user.name,
+        email: email,
+        role: userRole,
+        avatar: data.user.avatar || `https://picsum.photos/seed/${userId}/100/100`,
+        studentData: userRole === 'student' ? data.user : undefined
       });
-    } else {
-      // Mock student login - find a student by email or just pick the first one if empty
-      const student = students.find(s => s.email.toLowerCase() === email.toLowerCase()) || students[0];
-      onLogin({
-        id: student.id,
-        name: student.name,
-        email: student.email,
-        role: 'student',
-        avatar: student.avatar,
-        studentData: student
-      });
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,6 +92,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ students, onLogin }) => {
                 placeholder={selectedRole === 'teacher' ? 'miller@school.edu' : 'student@school.edu'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
                 className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-none transition-all"
               />
             </div>
@@ -98,20 +101,34 @@ const LoginPage: React.FC<LoginPageProps> = ({ students, onLogin }) => {
               <input
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-none transition-all"
               />
             </div>
           </div>
 
+          {error && (
+            <div className="p-4 bg-rose-50 text-rose-600 border border-rose-200 rounded-2xl text-sm font-medium flex items-center gap-2">
+              <span>⚠️</span> {error}
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-95"
+            disabled={isLoading}
+            className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:shadow-indigo-200 transition-all active:scale-95 disabled:opacity-70 flex justify-center items-center"
           >
-            Sign In to EduTrack
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              'Sign In to EduTrack'
+            )}
           </button>
 
           <p className="text-center text-xs text-slate-400 font-medium">
-            Demo: Use any credentials to sign in.
+            Teacher: miller@school.edu · Students: use your school email
           </p>
         </form>
       </div>

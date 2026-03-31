@@ -102,6 +102,8 @@ The static server will be accessible at [http://localhost:8000](http://localhost
 - `server.ts`: Express server and API endpoints.
 - `db.ts`: SQLite database initialization and seeding.
 - `constants.tsx`: Initial mock data and system constants.
+- `credentials.csv`: Excel-compatible list of student and teacher login details.
+- `CREDENTIALS.md`: Markdown table of login credentials for quick reference.
 
 ## 🛡️ Security
 

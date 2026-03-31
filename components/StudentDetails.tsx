@@ -24,6 +24,8 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
     ? Math.round((presentSessions.length / attendanceHistory.length) * 100) 
     : 100;
 
+  const assignments = student?.assignments || [];
+
   const handleOpenGrading = (as: Assignment) => {
     if (!isTeacherView) return;
     setSelectedAssignment(as);
@@ -87,9 +89,9 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
         </div>
         <div className="bg-white p-5 md:p-7 rounded-3xl border border-slate-200 shadow-sm">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Submissions</p>
-          <p className="text-2xl md:text-3xl font-black text-slate-800">{student.assignments.length}</p>
+          <p className="text-2xl md:text-3xl font-black text-slate-800">{assignments.length}</p>
           <p className="text-[10px] font-bold text-amber-600 mt-2 uppercase tracking-tighter">
-            {student.assignments.filter(a => a.status === 'submitted').length} Awaiting grading
+            {assignments.filter(a => a.status === 'submitted').length} Awaiting grading
           </p>
         </div>
         <div className="bg-white p-5 md:p-7 rounded-3xl border border-slate-200 shadow-sm sm:col-span-2 md:col-span-1">
@@ -184,7 +186,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
             {isTeacherView && <span className="text-[8px] md:text-[10px] font-bold text-slate-400">Click to Grade</span>}
           </div>
           <div className="divide-y divide-slate-100 flex-1">
-            {student.assignments.length > 0 ? student.assignments.map(as => (
+            {assignments.length > 0 ? assignments.map(as => (
               <div 
                 key={as.id} 
                 onClick={() => handleOpenGrading(as)}

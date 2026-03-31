@@ -17,7 +17,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
     ? Math.round((myAttendance.length / attendance.length) * 100) 
     : 100;
 
-  const pendingAssignments = student.assignments.filter(a => a.status === 'pending');
+  const assignments = student?.assignments || [];
+  const pendingAssignments = assignments.filter(a => a.status === 'pending');
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">

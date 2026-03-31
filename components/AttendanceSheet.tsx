@@ -3,11 +3,13 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Student, AttendanceRecord, User } from '../types';
 import QRScanner from './QRScanner';
 import { exportToCSV } from '../src/utils/csvExport';
+import AttendanceCSVImport from './AttendanceCSVImport';
 
 interface AttendanceSheetProps {
   students: Student[];
   onSave: (record: AttendanceRecord) => void;
   user: User;
+  onAttendanceImported?: () => void;
 }
 
 interface CheckInLog {
@@ -17,7 +19,7 @@ interface CheckInLog {
   time: string;
 }
 
-const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, user }) => {
+const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, user, onAttendanceImported }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'present' | 'absent'>('all');
@@ -241,6 +243,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
           </button>
         </div>
       </div>
+
+      {user.role === 'teacher' && (
+        <AttendanceCSVImport onImportSuccess={() => onAttendanceImported && onAttendanceImported()} />
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
         {/* Main Table Container */}

@@ -83,3 +83,30 @@ export interface ActivitySuggestion {
   materials: string[];
   duration: string;
 }
+
+export interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  authorName: string;
+  priority: 'normal' | 'high' | 'urgent';
+  targetRole: 'all' | 'teacher' | 'student';
+}
+
+export interface ParentMessage {
+  studentId: string;
+  studentName: string;
+  parentName: string;
+  parentRelation: string;
+  parentPhone: string;
+  parentEmail: string;
+  notes?: string;
+}
+
+export interface AuthToken {
+  token: string;
+  userId: string;
+  role: Role;
+  name: string;
+}

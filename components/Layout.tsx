@@ -32,6 +32,8 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/students', label: 'Students', icon: '👥' },
     { id: '/planner', label: 'Lesson Planner', icon: '🪄' },
     { id: '/schedule', label: 'Class Schedule', icon: '📅' },
+    { id: '/announcements', label: 'Announcements', icon: '📢' },
+    { id: '/parents', label: 'Parent Portal', icon: '👨‍👩‍👧‍👦' },
   ];
 
   const studentNavItems = [
@@ -40,6 +42,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/schedule', label: 'My Timetable', icon: '📅' },
     { id: '/assignments', label: 'Assignments', icon: '📚' },
     { id: '/my-progress', label: 'Grades & Progress', icon: '📈' },
+    { id: '/announcements', label: 'Announcements', icon: '📢' },
   ];
 
   const navItems = user.role === 'teacher' ? teacherNavItems : studentNavItems;

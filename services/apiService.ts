@@ -1,100 +1,212 @@
 
-import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment } from '../types';
+import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment, Announcement, ParentMessage, AuthToken } from '../types';
 
 const API_BASE = '/api';
 
+const TOKEN_KEY = 'edutrack_token';
+
 export const apiService = {
+  setAuthToken(token: string | null) {
+    if (token) {
+      sessionStorage.setItem(TOKEN_KEY, token);
+    } else {
+      sessionStorage.removeItem(TOKEN_KEY);
+    }
+  },
+
+  getAuthToken(): string | null {
+    return sessionStorage.getItem(TOKEN_KEY);
+  },
+
+  authHeaders(): HeadersInit {
+    const token = this.getAuthToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  },
+
+  async apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const headers = { ...this.authHeaders(), ...options.headers };
+    const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
+    
+    if (res.status === 401) {
+      this.setAuthToken(null);
+      sessionStorage.removeItem('edutrack_user');
+      window.location.href = '/';
+      throw new Error('Unauthorized');
+    }
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `API Error: ${res.status}`);
+    }
+    
+    return res;
+  },
+
+  async login(email: string, role: string): Promise<{ token: string; user: any }> {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, role })
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Login failed');
+    }
+    
+    const data = await res.json();
+    this.setAuthToken(data.token);
+    return data;
+  },
+
+  logout() {
+    this.setAuthToken(null);
+  },
+
   async getStudents(): Promise<Student[]> {
-    const res = await fetch(`${API_BASE}/students`);
-    if (!res.ok) throw new Error('Failed to fetch students');
+    const res = await this.apiFetch('/students');
     return res.json();
   },
 
   async getStudent(id: string): Promise<Student> {
-    const res = await fetch(`${API_BASE}/students/${id}`);
-    if (!res.ok) throw new Error('Failed to fetch student');
+    const res = await this.apiFetch(`/students/${id}`);
     return res.json();
   },
 
   async getAttendance(): Promise<AttendanceRecord[]> {
-    const res = await fetch(`${API_BASE}/attendance`);
-    if (!res.ok) throw new Error('Failed to fetch attendance');
+    const res = await this.apiFetch('/attendance');
     return res.json();
   },
 
   async markAttendance(date: string, presentStudentIds: string[]): Promise<void> {
-    const res = await fetch(`${API_BASE}/attendance`, {
+    await this.apiFetch('/attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ date, presentStudentIds })
     });
-    if (!res.ok) throw new Error('Failed to mark attendance');
   },
 
   async getSchedule(): Promise<ScheduleEntry[]> {
-    const res = await fetch(`${API_BASE}/schedule`);
-    if (!res.ok) throw new Error('Failed to fetch schedule');
+    const res = await this.apiFetch('/schedule');
     return res.json();
   },
 
   async getActivities(): Promise<Activity[]> {
-    const res = await fetch(`${API_BASE}/activities`);
-    if (!res.ok) throw new Error('Failed to fetch activities');
+    const res = await this.apiFetch('/activities');
     return res.json();
   },
 
   async createActivity(activity: Activity): Promise<void> {
-    const res = await fetch(`${API_BASE}/activities`, {
+    await this.apiFetch('/activities', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(activity)
     });
-    if (!res.ok) throw new Error('Failed to create activity');
   },
 
   async updateActivity(id: string, status: string): Promise<void> {
-    const res = await fetch(`${API_BASE}/activities/${id}`, {
+    await this.apiFetch(`/activities/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
-    if (!res.ok) throw new Error('Failed to update activity');
   },
 
   async updateAssignment(id: string, updates: Partial<Assignment>): Promise<void> {
-    const res = await fetch(`${API_BASE}/assignments/${id}`, {
+    await this.apiFetch(`/assignments/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
     });
-    if (!res.ok) throw new Error('Failed to update assignment');
   },
 
   async uploadFile(file: File): Promise<{ url: string; filename: string }> {
     const formData = new FormData();
     formData.append('file', file);
+    
+    const token = this.getAuthToken();
+    const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
     const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
+      headers, // Do not set Content-Type for FormData, browser handles boundary
       body: formData
     });
+    
+    if (res.status === 401) {
+      this.setAuthToken(null);
+      throw new Error('Unauthorized');
+    }
     if (!res.ok) throw new Error('Failed to upload file');
     return res.json();
   },
 
   async getQRToken(studentId: string): Promise<string> {
-    const res = await fetch(`${API_BASE}/qr/token/${studentId}`);
-    if (!res.ok) throw new Error('Failed to get QR token');
+    const res = await this.apiFetch(`/qr/token/${studentId}`);
     const data = await res.json();
     return data.token;
   },
 
   async verifyQR(token: string, teacherId: string): Promise<any> {
-    const res = await fetch(`${API_BASE}/qr/verify`, {
+    const res = await this.apiFetch('/qr/verify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, teacherId })
     });
-    if (!res.ok) throw new Error('Failed to verify QR');
+    return res.json();
+  },
+
+  async getAnnouncements(): Promise<Announcement[]> {
+    const res = await this.apiFetch('/announcements');
+    return res.json();
+  },
+
+  async createAnnouncement(announcement: Announcement): Promise<void> {
+    await this.apiFetch('/announcements', {
+      method: 'POST',
+      body: JSON.stringify(announcement)
+    });
+  },
+
+  async deleteAnnouncement(id: string): Promise<void> {
+    await this.apiFetch(`/announcements/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  async getParentContacts(): Promise<ParentMessage[]> {
+    const res = await this.apiFetch('/parent-contacts');
+    return res.json();
+  },
+
+  async updateParentContact(studentId: string, updates: Partial<ParentMessage>): Promise<void> {
+    await this.apiFetch(`/parent-contacts/${studentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    });
+  },
+
+  async importAttendanceCSV(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const token = this.getAuthToken();
+    const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    const res = await fetch(`${API_BASE}/attendance/import-csv`, {
+      method: 'POST',
+      headers, // Do not set Content-Type for FormData
+      body: formData
+    });
+    
+    if (res.status === 401) {
+      this.setAuthToken(null);
+      throw new Error('Unauthorized');
+    }
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to import CSV');
+    }
+    
     return res.json();
   }
 };

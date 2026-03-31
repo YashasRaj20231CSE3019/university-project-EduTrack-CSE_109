@@ -13,6 +13,8 @@ import StudentDirectory from './components/StudentDirectory';
 import ScheduleView from './components/ScheduleView';
 import AssignmentsView from './components/AssignmentsView';
 import LessonPlanner from './components/LessonPlanner';
+import AnnouncementsPanel from './components/AnnouncementsPanel';
+import ParentPortal from './components/ParentPortal';
 import { Student, Activity, AttendanceRecord, User, Assignment, Notification, ScheduleEntry } from './types';
 import { INITIAL_NOTIFICATIONS } from './constants';
 import { apiService } from './services/apiService';
@@ -30,27 +32,55 @@ const App: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [studentsData, activitiesData, attendanceData, scheduleData] = await Promise.all([
-          apiService.getStudents(),
-          apiService.getActivities(),
-          apiService.getAttendance(),
-          apiService.getSchedule()
-        ]);
-        setStudents(studentsData);
-        setActivities(activitiesData);
-        setAttendance(attendanceData);
-        setSchedule(scheduleData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    // Check for existing session
+    const storedUser = sessionStorage.getItem('edutrack_user');
+    const storedToken = sessionStorage.getItem('edutrack_token');
+    
+    if (storedUser && storedToken) {
+      setCurrentUser(JSON.parse(storedUser));
+      apiService.setAuthToken(storedToken);
+      fetchData();
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [studentsData, activitiesData, attendanceData, scheduleData] = await Promise.all([
+        apiService.getStudents(),
+        apiService.getActivities(),
+        apiService.getAttendance(),
+        apiService.getSchedule()
+      ]);
+      setStudents(studentsData);
+      setActivities(activitiesData);
+      setAttendance(attendanceData);
+      setSchedule(scheduleData);
+
+      setCurrentUser(prevUser => {
+        if (prevUser?.role === 'student') {
+          const updatedStudent = studentsData.find(s => s.id === prevUser.id);
+          if (updatedStudent) {
+            const newUser = { ...prevUser, studentData: updatedStudent };
+            sessionStorage.setItem('edutrack_user', JSON.stringify(newUser));
+            return newUser;
+          }
+        }
+        return prevUser;
+      });
+    } catch (error) {
+      // If unauthorized, clear session
+      if (error instanceof Error && error.message === 'Unauthorized') {
+        handleLogout();
+      } else {
+        console.error('Error fetching data:', error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMarkAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -83,7 +113,15 @@ const App: React.FC = () => {
   const handleSaveAttendance = async (record: AttendanceRecord) => {
     try {
       await apiService.markAttendance(record.date, record.presentStudentIds);
-      setAttendance(prev => [...prev, record]);
+      setAttendance(prev => {
+        const existingIdx = prev.findIndex(a => a.date === record.date);
+        if (existingIdx >= 0) {
+          const newAttendance = [...prev];
+          newAttendance[existingIdx] = record;
+          return newAttendance;
+        }
+        return [...prev, record];
+      });
     } catch (error) {
       console.error('Error saving attendance:', error);
     }
@@ -108,10 +146,12 @@ const App: React.FC = () => {
         if (currentUser?.role === 'student' && currentUser.id === studentId) {
           const updatedStudent = updatedStudents.find(s => s.id === studentId);
           if (updatedStudent) {
-            setCurrentUser({
+            const updatedUser = {
               ...currentUser,
               studentData: updatedStudent
-            });
+            };
+            setCurrentUser(updatedUser);
+            sessionStorage.setItem('edutrack_user', JSON.stringify(updatedUser));
           }
         }
         
@@ -124,15 +164,19 @@ const App: React.FC = () => {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
+    sessionStorage.setItem('edutrack_user', JSON.stringify(user));
+    fetchData(); // Fetch data after login
     navigate('/');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    sessionStorage.removeItem('edutrack_user');
+    apiService.logout();
     navigate('/login');
   };
 
-  if (loading) {
+  if ((loading && !currentUser && location.pathname !== '/login') || (currentUser?.role === 'student' && !currentUser.studentData)) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -152,52 +196,8 @@ const App: React.FC = () => {
   }
 
   if (!currentUser) {
-    return <LoginPage students={students} onLogin={handleLogin} />;
+    return <LoginPage onLogin={handleLogin} />;
   }
-
-  const TeacherRoutes = () => (
-    <Routes>
-      <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} />} />
-      <Route path="/attendance" element={<AttendanceSheet students={students} onSave={handleSaveAttendance} user={currentUser} />} />
-      <Route path="/schedule" element={<ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" />} />
-      <Route path="/students" element={<StudentDirectory students={students} />} />
-      <Route path="/students/:id" element={
-        <StudentDetailsWrapper 
-          students={students} 
-          attendance={attendance} 
-          onUpdateAssignment={handleUpdateAssignment}
-          isTeacherView={true}
-        />
-      } />
-      <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={handleAddActivity} onUpdateActivity={handleUpdateActivity} />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-
-  const StudentRoutes = () => {
-    const student = currentUser.studentData!;
-    return (
-      <Routes>
-        <Route path="/" element={
-          <StudentDashboard 
-            student={student} 
-            attendance={attendance} 
-          />
-        } />
-        <Route path="/schedule" element={<ScheduleView schedule={schedule} title="My Timetable" />} />
-        <Route path="/assignments" element={<AssignmentsView student={student} onUpdateAssignment={(aId, updates) => handleUpdateAssignment(student.id, aId, updates)} />} />
-        <Route path="/lesson-planner" element={<LessonPlanner student={student} activities={activities} />} />
-        <Route path="/my-progress" element={
-          <StudentDetails 
-            student={student} 
-            attendanceHistory={attendance} 
-            onBack={() => navigate('/')} 
-          />
-        } />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    );
-  };
 
   return (
     <Layout 
@@ -216,10 +216,106 @@ const App: React.FC = () => {
           transition={{ duration: 0.2 }}
           className="h-full"
         >
-          {currentUser.role === 'teacher' ? <TeacherRoutes /> : <StudentRoutes />}
+          {currentUser.role === 'teacher' ? (
+            <TeacherRoutes 
+              students={students} 
+              attendance={attendance} 
+              activities={activities} 
+              schedule={schedule} 
+              currentUser={currentUser} 
+              onSaveAttendance={handleSaveAttendance}
+              onAddActivity={handleAddActivity}
+              onUpdateActivity={handleUpdateActivity}
+              onUpdateAssignment={handleUpdateAssignment}
+              fetchData={fetchData}
+            />
+          ) : (
+            <StudentRoutes 
+              student={currentUser.studentData!} 
+              attendance={attendance} 
+              schedule={schedule} 
+              activities={activities} 
+              currentUser={currentUser}
+              onUpdateAssignment={handleUpdateAssignment}
+            />
+          )}
         </motion.div>
       </AnimatePresence>
     </Layout>
+  );
+};
+
+const TeacherRoutes: React.FC<{
+  students: Student[];
+  attendance: AttendanceRecord[];
+  activities: Activity[];
+  schedule: ScheduleEntry[];
+  currentUser: User;
+  onSaveAttendance: (record: AttendanceRecord) => Promise<void>;
+  onAddActivity: (act: Activity) => Promise<void>;
+  onUpdateActivity: (id: string, updates: Partial<Activity>) => Promise<void>;
+  onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
+  fetchData: () => Promise<void>;
+}> = ({ students, attendance, activities, schedule, currentUser, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, fetchData }) => (
+  <Routes>
+    <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} />} />
+    <Route path="/attendance" element={<AttendanceSheet students={students} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
+    <Route path="/schedule" element={<ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" />} />
+    <Route path="/students" element={<StudentDirectory students={students} />} />
+    <Route path="/students/:id" element={
+      <StudentDetailsWrapper 
+        students={students} 
+        attendance={attendance} 
+        onUpdateAssignment={onUpdateAssignment}
+        isTeacherView={true}
+      />
+    } />
+    <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={onAddActivity} onUpdateActivity={onUpdateActivity} />} />
+    <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
+    <Route path="/parents" element={<ParentPortal />} />
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>
+);
+
+const StudentRoutes: React.FC<{
+  student: Student;
+  attendance: AttendanceRecord[];
+  schedule: ScheduleEntry[];
+  activities: Activity[];
+  currentUser: User;
+  onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
+}> = ({ student, attendance, schedule, activities, currentUser, onUpdateAssignment }) => {
+  const navigate = useNavigate();
+  
+  if (!student) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-slate-400 font-bold uppercase tracking-widest">Student data not found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={
+        <StudentDashboard 
+          student={student} 
+          attendance={attendance} 
+        />
+      } />
+      <Route path="/schedule" element={<ScheduleView schedule={schedule} title="My Timetable" />} />
+      <Route path="/assignments" element={<AssignmentsView student={student} onUpdateAssignment={(aId, updates) => onUpdateAssignment(student.id, aId, updates)} />} />
+      <Route path="/lesson-planner" element={<LessonPlanner student={student} activities={activities} />} />
+      <Route path="/my-progress" element={
+        <StudentDetails 
+          student={student} 
+          attendanceHistory={attendance} 
+          onBack={() => navigate('/')} 
+        />
+      } />
+      <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 
