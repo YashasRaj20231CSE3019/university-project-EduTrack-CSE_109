@@ -1,19 +1,19 @@
 
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
-import db, { initDb } from "./db.js";
+import db, { initDb } from "./db.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, "uploads");
+const isProd = process.env.NODE_ENV === "production";
+const uploadsDir = isProd ? path.join("/tmp", "uploads") : path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -202,6 +202,7 @@ app.post("/api/qr/verify", (req, res) => {
 // Vite middleware for development
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

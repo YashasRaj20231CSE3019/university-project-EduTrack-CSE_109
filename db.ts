@@ -2,12 +2,14 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { INITIAL_STUDENTS, INITIAL_ATTENDANCE, INITIAL_ACTIVITIES, MOCK_SCHEDULE } from './constants.js';
+import { INITIAL_STUDENTS, INITIAL_ATTENDANCE, INITIAL_ACTIVITIES, MOCK_SCHEDULE } from './constants.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const db = new Database(path.join(__dirname, 'edutrack.db'));
+const isProd = process.env.NODE_ENV === "production";
+const dbPath = isProd ? path.join('/tmp', 'edutrack.db') : path.join(__dirname, 'edutrack.db');
+const db = new Database(dbPath);
 
 // Initialize database
 export function initDb() {

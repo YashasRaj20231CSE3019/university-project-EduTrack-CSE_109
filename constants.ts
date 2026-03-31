@@ -1,5 +1,5 @@
 
-import { Student, Activity, Assignment, ScheduleEntry, AttendanceRecord } from './types';
+import type { Student, Activity, Assignment, ScheduleEntry, AttendanceRecord } from './types.ts';
 
 const ASSIGNMENT_TEMPLATES = [
   { title: 'Cell Theory Essay', subject: 'Science', description: 'A 500-word essay on the origins of cell theory.' },
