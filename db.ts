@@ -79,6 +79,22 @@ export function initDb() {
       token TEXT PRIMARY KEY,
       usedAt TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS teachers (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      avatar TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS messages (
+      id TEXT PRIMARY KEY,
+      senderId TEXT NOT NULL,
+      receiverId TEXT NOT NULL,
+      text TEXT NOT NULL,
+      timestamp TEXT NOT NULL,
+      read INTEGER DEFAULT 0
+    );
   `);
 
   // Migration: Add submissionText and submissionFile if they don't exist
@@ -96,6 +112,19 @@ export function initDb() {
     db.exec("ALTER TABLE assignments ADD COLUMN comments TEXT;");
   } catch (e) {
     // Column might already exist
+  }
+
+  // Seed teachers if empty
+  const teacherCount = db.prepare('SELECT count(*) as count FROM teachers').get() as { count: number };
+  if (teacherCount.count === 0) {
+    console.log('🌱 Seeding teachers...');
+    const insertTeacher = db.prepare('INSERT INTO teachers (id, name, email, avatar) VALUES (?, ?, ?, ?)');
+    db.transaction(() => {
+      insertTeacher.run('teacher-1', 'Dr. Miller', 'miller@school.edu', 'https://picsum.photos/seed/teacher1/200/200');
+      insertTeacher.run('teacher-2', 'Prof. X', 'profx@school.edu', 'https://picsum.photos/seed/teacher2/200/200');
+      insertTeacher.run('teacher-3', 'Ms. Wright', 'wright@school.edu', 'https://picsum.photos/seed/teacher3/200/200');
+    })();
+    console.log('✅ Teachers seeded.');
   }
 
   // Seed data if empty

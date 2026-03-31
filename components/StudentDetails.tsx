@@ -1,20 +1,25 @@
 
 import React, { useState } from 'react';
 import { Student, AttendanceRecord, Assignment } from '../types';
+import ProfileEditor from './ProfileEditor';
+import ChatSection from './ChatSection';
 
 interface StudentDetailsProps {
   student: Student;
   attendanceHistory: AttendanceRecord[];
   onBack: () => void;
   onUpdateAssignment?: (assignmentId: string, updates: Partial<Assignment>) => void;
+  onUpdateStudent?: (updatedStudent: Student) => void;
   isTeacherView?: boolean;
+  currentUser: any;
 }
 
-const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHistory, onBack, onUpdateAssignment, isTeacherView }) => {
+const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHistory, onBack, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser }) => {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [gradeValue, setGradeValue] = useState('');
   const [commentsValue, setCommentsValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [viewMode, setViewMode] = useState<'details' | 'settings' | 'chat'>('details');
 
   const presentSessions = attendanceHistory.filter(record => 
     record.presentStudentIds.includes(student.id)
@@ -69,17 +74,49 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
             <p className="text-slate-500 font-bold uppercase text-[8px] md:text-[10px] tracking-widest">{student.grade} • {student.email}</p>
           </div>
           <div className="flex gap-2 justify-center md:justify-end">
-            <button className="flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-3 bg-indigo-50 text-indigo-700 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-all active:scale-95 shadow-sm">
-              Message
+            <button 
+              onClick={() => setViewMode(viewMode === 'chat' ? 'details' : 'chat')}
+              className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-3 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm ${
+                viewMode === 'chat' ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+              }`}
+            >
+              {viewMode === 'chat' ? 'Close Chat' : 'Message'}
             </button>
-            <button className="flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-3 bg-slate-50 text-slate-400 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95 shadow-sm">
-              Settings
-            </button>
+            {!isTeacherView && (
+              <button 
+                onClick={() => setViewMode(viewMode === 'settings' ? 'details' : 'settings')}
+                className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 md:py-3 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-sm ${
+                  viewMode === 'settings' ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                }`}
+              >
+                {viewMode === 'settings' ? 'Close Settings' : 'Settings'}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      {viewMode === 'settings' && !isTeacherView && (
+        <ProfileEditor 
+          student={student} 
+          onUpdate={(updated) => {
+            onUpdateStudent?.(updated);
+            setViewMode('details');
+          }}
+          onCancel={() => setViewMode('details')}
+        />
+      )}
+
+      {viewMode === 'chat' && (
+        <ChatSection 
+          currentUserId={currentUser.id} 
+          onClose={() => setViewMode('details')}
+        />
+      )}
+
+      {viewMode === 'details' && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <div className="bg-white p-5 md:p-7 rounded-3xl border border-slate-200 shadow-sm">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Attendance Rate</p>
           <p className="text-2xl md:text-3xl font-black text-slate-800">{attendanceRate}%</p>
@@ -252,8 +289,10 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
           </div>
         </div>
       </div>
+    </>
+  )}
 
-      {/* Grading Modal */}
+    {/* Grading Modal */}
       {selectedAssignment && isTeacherView && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg rounded-[2.5rem] md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 border border-slate-100 max-h-[90vh] flex flex-col">

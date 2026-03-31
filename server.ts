@@ -7,6 +7,15 @@ import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
 import db, { initDb } from "./db.ts";
+import type { AuthToken } from "./types.ts";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthToken;
+    }
+  }
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,7 +64,7 @@ const requireAuth = (req: any, res: any, next: any) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET as string) as any;
-    req.user = { userId: decoded.userId, role: decoded.role, name: decoded.name };
+    req.user = { id: decoded.id, role: decoded.role, name: decoded.name };
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });
@@ -80,8 +89,9 @@ app.post("/api/auth/login", (req, res) => {
   const { email, role } = req.body;
   
   if (role === 'teacher') {
-    if (email === 'miller@school.edu') {
-      const user = { userId: 'teacher-1', role: 'teacher', name: 'Mr. Miller' };
+    const teacher = db.prepare('SELECT * FROM teachers WHERE email = ?').get(email) as any;
+    if (teacher) {
+      const user = { id: teacher.id, role: 'teacher', name: teacher.name, avatar: teacher.avatar };
       const token = jwt.sign(user, JWT_SECRET as string, { expiresIn: '8h' });
       return res.json({ token, user });
     }
@@ -89,7 +99,7 @@ app.post("/api/auth/login", (req, res) => {
   } else if (role === 'student') {
     const student = db.prepare('SELECT * FROM students WHERE email = ?').get(email) as any;
     if (student) {
-      const user = { userId: student.id, role: 'student', name: student.name };
+      const user = { id: student.id, role: 'student', name: student.name };
       const token = jwt.sign(user, JWT_SECRET as string, { expiresIn: '8h' });
       
       const formattedStudent = {
@@ -120,7 +130,7 @@ app.get("/api/students", requireAuth, (req: any, res) => {
 app.get("/api/students/:id", requireAuth, (req: any, res) => {
   const { id } = req.params;
   
-  if (req.user.role === 'student' && req.user.userId !== id) {
+  if (req.user.role === 'student' && req.user.id !== id) {
     return res.status(403).json({ message: "Access denied: Students can only view their own record" });
   }
 
@@ -223,7 +233,7 @@ app.patch("/api/assignments/:id", requireAuth, (req: any, res) => {
 app.get("/api/qr/token/:studentId", requireAuth, (req: any, res) => {
   const { studentId } = req.params;
   
-  if (req.user.role === 'student' && req.user.userId !== studentId) {
+  if (req.user.role === 'student' && req.user.id !== studentId) {
     return res.status(403).json({ message: "Access denied: Students can only generate their own QR token" });
   }
   
@@ -424,6 +434,81 @@ app.post("/api/attendance/import-csv", requireTeacher, upload.single("file"), (r
     console.error("CSV Import Error:", err);
     res.status(500).json({ message: "Failed to process CSV file" });
   }
+});
+
+// Users API
+app.get("/api/users", requireAuth, (req, res) => {
+  try {
+    console.log('DEBUG: GET /api/users called - v2');
+    const students = db.prepare("SELECT id, name, email, avatar, 'student' as role FROM students").all();
+    
+    // Ensure teachers table exists before querying
+    let teachers = [];
+    try {
+      teachers = db.prepare("SELECT id, name, email, avatar, 'teacher' as role FROM teachers").all();
+    } catch (e) {
+      console.warn("Teachers table might not exist yet, returning empty list");
+    }
+    
+    console.log(`Found ${students.length} students and ${teachers.length} teachers`);
+    res.json({ students, teachers });
+  } catch (err) {
+    console.error("Error in /api/users:", err);
+    res.status(500).json({ message: "Failed to fetch users", error: String(err) });
+  }
+});
+
+// Profile Update API
+app.patch("/api/students/:id", requireAuth, (req, res) => {
+  const { id } = req.params;
+  const { name, email, avatar } = req.body;
+  
+  // Only allow students to update their own profile, or teachers to update any student
+  if (req.user!.role !== 'teacher' && req.user!.id !== id) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+
+  const updates: string[] = [];
+  const params: any[] = [];
+
+  if (name) { updates.push("name = ?"); params.push(name); }
+  if (email) { updates.push("email = ?"); params.push(email); }
+  if (avatar) { updates.push("avatar = ?"); params.push(avatar); }
+
+  if (updates.length === 0) return res.json({ success: true });
+
+  params.push(id);
+  db.prepare(`UPDATE students SET ${updates.join(", ")} WHERE id = ?`).run(...params);
+  res.json({ success: true });
+});
+
+// Chat API
+app.get("/api/messages/:otherUserId", requireAuth, (req, res) => {
+  const { otherUserId } = req.params;
+  const userId = req.user!.id;
+  
+  const messages = db.prepare(`
+    SELECT * FROM messages 
+    WHERE (senderId = ? AND receiverId = ?) 
+       OR (senderId = ? AND receiverId = ?)
+    ORDER BY timestamp ASC
+  `).all(userId, otherUserId, otherUserId, userId);
+  
+  res.json(messages);
+});
+
+app.post("/api/messages", requireAuth, (req, res) => {
+  const { receiverId, text } = req.body;
+  const senderId = req.user!.id;
+  const id = Math.random().toString(36).substr(2, 9);
+  const timestamp = new Date().toISOString();
+  
+  db.prepare(`
+    INSERT INTO messages (id, senderId, receiverId, text, timestamp, read)
+    VALUES (?, ?, ?, ?, ?, 0)
+  `).run(id, senderId, receiverId, text, timestamp);
+  
+  res.json({ id, senderId, receiverId, text, timestamp, read: 0 });
 });
 
 // Vite middleware for development

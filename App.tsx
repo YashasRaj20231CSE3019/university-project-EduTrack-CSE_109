@@ -162,6 +162,21 @@ const App: React.FC = () => {
     }
   };
 
+  const handleUpdateStudent = async (updatedStudent: Student) => {
+    setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s));
+    if (currentUser?.role === 'student' && currentUser.studentData?.id === updatedStudent.id) {
+      const updatedUser = {
+        ...currentUser,
+        name: updatedStudent.name,
+        email: updatedStudent.email,
+        avatar: updatedStudent.avatar,
+        studentData: updatedStudent
+      };
+      setCurrentUser(updatedUser);
+      sessionStorage.setItem('edutrack_user', JSON.stringify(updatedUser));
+    }
+  };
+
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     sessionStorage.setItem('edutrack_user', JSON.stringify(user));
@@ -227,6 +242,7 @@ const App: React.FC = () => {
               onAddActivity={handleAddActivity}
               onUpdateActivity={handleUpdateActivity}
               onUpdateAssignment={handleUpdateAssignment}
+              onUpdateStudent={handleUpdateStudent}
               fetchData={fetchData}
             />
           ) : (
@@ -237,6 +253,7 @@ const App: React.FC = () => {
               activities={activities} 
               currentUser={currentUser}
               onUpdateAssignment={handleUpdateAssignment}
+              onUpdateStudent={handleUpdateStudent}
             />
           )}
         </motion.div>
@@ -255,8 +272,9 @@ const TeacherRoutes: React.FC<{
   onAddActivity: (act: Activity) => Promise<void>;
   onUpdateActivity: (id: string, updates: Partial<Activity>) => Promise<void>;
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
+  onUpdateStudent: (updatedStudent: Student) => Promise<void>;
   fetchData: () => Promise<void>;
-}> = ({ students, attendance, activities, schedule, currentUser, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, fetchData }) => (
+}> = ({ students, attendance, activities, schedule, currentUser, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, fetchData }) => (
   <Routes>
     <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} />} />
     <Route path="/attendance" element={<AttendanceSheet students={students} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
@@ -267,7 +285,9 @@ const TeacherRoutes: React.FC<{
         students={students} 
         attendance={attendance} 
         onUpdateAssignment={onUpdateAssignment}
+        onUpdateStudent={onUpdateStudent}
         isTeacherView={true}
+        currentUser={currentUser}
       />
     } />
     <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={onAddActivity} onUpdateActivity={onUpdateActivity} />} />
@@ -284,7 +304,8 @@ const StudentRoutes: React.FC<{
   activities: Activity[];
   currentUser: User;
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
-}> = ({ student, attendance, schedule, activities, currentUser, onUpdateAssignment }) => {
+  onUpdateStudent: (updatedStudent: Student) => Promise<void>;
+}> = ({ student, attendance, schedule, activities, currentUser, onUpdateAssignment, onUpdateStudent }) => {
   const navigate = useNavigate();
   
   if (!student) {
@@ -311,6 +332,8 @@ const StudentRoutes: React.FC<{
           student={student} 
           attendanceHistory={attendance} 
           onBack={() => navigate('/')} 
+          onUpdateStudent={onUpdateStudent}
+          currentUser={currentUser}
         />
       } />
       <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
@@ -325,8 +348,10 @@ const StudentDetailsWrapper: React.FC<{
   students: Student[];
   attendance: AttendanceRecord[];
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => void;
+  onUpdateStudent: (updatedStudent: Student) => void;
   isTeacherView: boolean;
-}> = ({ students, attendance, onUpdateAssignment, isTeacherView }) => {
+  currentUser: User;
+}> = ({ students, attendance, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const student = students.find(s => s.id === id);
@@ -341,7 +366,9 @@ const StudentDetailsWrapper: React.FC<{
       attendanceHistory={attendance}
       onBack={() => navigate('/students')} 
       onUpdateAssignment={(aId, updates) => onUpdateAssignment(student.id, aId, updates)}
+      onUpdateStudent={onUpdateStudent}
       isTeacherView={isTeacherView}
+      currentUser={currentUser}
     />
   );
 };

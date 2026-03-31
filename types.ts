@@ -104,9 +104,32 @@ export interface ParentMessage {
   notes?: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+  timestamp: string;
+  read: boolean;
+}
+
+export interface ChatRoom {
+  id: string;
+  participants: string[]; // [userId1, userId2]
+  lastMessage?: ChatMessage;
+}
+
+export interface ChatUser {
+  id: string;
+  name: string;
+  role: Role;
+  avatar: string;
+  email: string;
+}
+
 export interface AuthToken {
-  token: string;
-  userId: string;
+  id: string;
+  email: string;
   role: Role;
   name: string;
 }

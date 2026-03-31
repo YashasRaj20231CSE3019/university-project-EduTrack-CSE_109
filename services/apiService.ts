@@ -1,5 +1,5 @@
 
-import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment, Announcement, ParentMessage, AuthToken } from '../types';
+import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment, Announcement, ParentMessage } from '../types';
 
 const API_BASE = '/api';
 
@@ -207,6 +207,31 @@ export const apiService = {
       throw new Error(errorData.message || 'Failed to import CSV');
     }
     
+    return res.json();
+  },
+
+  async getUsers(): Promise<{ students: any[]; teachers: any[] }> {
+    const res = await this.apiFetch('/users');
+    return res.json();
+  },
+
+  async updateStudentProfile(id: string, updates: { name?: string; email?: string; avatar?: string }): Promise<void> {
+    await this.apiFetch(`/students/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    });
+  },
+
+  async getMessages(otherUserId: string): Promise<any[]> {
+    const res = await this.apiFetch(`/messages/${otherUserId}`);
+    return res.json();
+  },
+
+  async sendMessage(receiverId: string, text: string): Promise<any> {
+    const res = await this.apiFetch('/messages', {
+      method: 'POST',
+      body: JSON.stringify({ receiverId, text })
+    });
     return res.json();
   }
 };
