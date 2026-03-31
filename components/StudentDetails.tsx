@@ -13,6 +13,7 @@ interface StudentDetailsProps {
 const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHistory, onBack, onUpdateAssignment, isTeacherView }) => {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [gradeValue, setGradeValue] = useState('');
+  const [commentsValue, setCommentsValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const presentSessions = attendanceHistory.filter(record => 
@@ -27,6 +28,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
     if (!isTeacherView) return;
     setSelectedAssignment(as);
     setGradeValue(as.grade === '-' ? '' : as.grade);
+    setCommentsValue(as.comments || '');
   };
 
   const handleSaveGrade = () => {
@@ -36,6 +38,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
     setTimeout(() => {
       onUpdateAssignment(selectedAssignment.id, {
         grade: gradeValue,
+        comments: commentsValue,
         status: 'graded'
       });
       setIsSaving(false);
@@ -269,6 +272,12 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
              </div>
              
              <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto">
+                {selectedAssignment.description && (
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Assignment Description</h4>
+                    <p className="text-xs md:text-sm text-slate-600 leading-relaxed">{selectedAssignment.description}</p>
+                  </div>
+                )}
                 {selectedAssignment.status !== 'pending' && (
                   <div className="space-y-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                     <div>
@@ -317,6 +326,8 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                 <div>
                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Teacher Comments</label>
                    <textarea 
+                     value={commentsValue}
+                     onChange={(e) => setCommentsValue(e.target.value)}
                      placeholder="Add constructive feedback for the student..."
                      className="w-full h-24 md:h-32 px-4 md:px-6 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs md:text-sm font-medium text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-none transition-all resize-none leading-relaxed"
                    ></textarea>

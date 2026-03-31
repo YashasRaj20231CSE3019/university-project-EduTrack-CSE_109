@@ -44,8 +44,8 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="bg-emerald-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-emerald-200">
         <div className="relative z-10 text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Curriculum Assistant 📖</h1>
-          <p className="text-emerald-100 text-sm md:text-lg max-w-2xl">Stay ahead of your studies by reviewing upcoming lessons and using our AI assistant to understand your syllabus better.</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Activity Planner 📖</h1>
+          <p className="text-emerald-100 text-sm md:text-lg max-w-2xl">Stay ahead of your studies by reviewing upcoming activities and using our AI assistant to understand your syllabus better.</p>
         </div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400/20 rounded-full -mr-32 -mt-32 blur-3xl"></div>
       </div>
@@ -104,7 +104,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-8">
           <div className="flex items-center justify-between px-4">
-            <h3 className="text-2xl font-black text-slate-800">Upcoming Lessons</h3>
+            <h3 className="text-2xl font-black text-slate-800">Upcoming Activities</h3>
             <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-black uppercase tracking-widest">
               {plannedActivities.length} PLANNED
             </span>
@@ -173,7 +173,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
             ))}
             {plannedActivities.length === 0 && (
               <div className="py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-center">
-                <p className="text-slate-400 font-bold uppercase tracking-widest">No upcoming lessons scheduled yet.</p>
+                <p className="text-slate-400 font-bold uppercase tracking-widest">No upcoming activities scheduled yet.</p>
               </div>
             )}
           </div>
@@ -197,7 +197,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
                 </div>
               ))}
               {completedActivities.length === 0 && (
-                <p className="text-xs text-slate-400 font-medium italic text-center py-4">No lessons completed this week.</p>
+                <p className="text-xs text-slate-400 font-medium italic text-center py-4">No activities completed this week.</p>
               )}
             </div>
           </div>
@@ -206,7 +206,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
             <h4 className="text-xl font-black mb-2">Study Tip</h4>
             <p className="text-sm font-medium text-indigo-100 opacity-80 leading-relaxed">
-              Reviewing the learning objectives before class helps you focus on the most important concepts during the lesson.
+              Reviewing the learning objectives before class helps you focus on the most important concepts during the activity.
             </p>
           </div>
         </div>
@@ -219,7 +219,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
               <div className="relative z-10 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">AI Assistant</p>
-                  <h3 className="text-xl md:text-2xl font-black">Lesson Deep Dive ✨</h3>
+                  <h3 className="text-xl md:text-2xl font-black">Activity Deep Dive ✨</h3>
                 </div>
                 <button 
                   onClick={() => setShowModal(false)}

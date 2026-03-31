@@ -20,6 +20,7 @@ export interface Assignment {
   description?: string;
   submissionText?: string;
   submissionFile?: string;
+  comments?: string;
 }
 
 export interface Student {

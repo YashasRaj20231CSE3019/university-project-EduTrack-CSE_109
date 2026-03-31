@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { User, Notification } from '../types';
 
 interface LayoutProps {
@@ -29,13 +30,13 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/', label: 'Overview', icon: '📊' },
     { id: '/attendance', label: 'Attendance', icon: '📝' },
     { id: '/students', label: 'Students', icon: '👥' },
-    { id: '/planner', label: 'Activity Planner', icon: '🪄' },
+    { id: '/planner', label: 'Lesson Planner', icon: '🪄' },
     { id: '/schedule', label: 'Class Schedule', icon: '📅' },
   ];
 
   const studentNavItems = [
     { id: '/', label: 'My Dashboard', icon: '🏠' },
-    { id: '/lesson-planner', label: 'Lesson Plan', icon: '📖' },
+    { id: '/lesson-planner', label: 'Activity Planner', icon: '📖' },
     { id: '/schedule', label: 'My Timetable', icon: '📅' },
     { id: '/assignments', label: 'Assignments', icon: '📚' },
     { id: '/my-progress', label: 'Grades & Progress', icon: '📈' },
@@ -55,14 +56,14 @@ const Layout: React.FC<LayoutProps> = ({
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] lg:hidden animate-in fade-in duration-300"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-[1000] w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 lg:relative lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="px-6 py-8 flex items-center justify-between">
@@ -89,23 +90,40 @@ const Layout: React.FC<LayoutProps> = ({
         <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
           <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Main Menu</p>
           {navItems.map((item) => {
-            const isActive = item.id === '/' ? location.pathname === '/' : location.pathname.startsWith(item.id);
             return (
-              <Link
+              <NavLink
                 key={item.id}
                 to={item.id}
+                end={item.id === '/'}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                  isActive
+                className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 group
+                  ${isActive
                     ? 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100 shadow-sm'
                     : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
-                }`}
+                  }
+                `}
               >
-                <span className={`text-lg transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
-                  {item.icon}
-                </span>
-                {item.label}
-              </Link>
+                {({ isActive }) => (
+                  <>
+                    <motion.span 
+                      className="text-lg"
+                      animate={{ scale: isActive ? 1.15 : 1 }}
+                      whileHover={{ scale: 1.15 }}
+                    >
+                      {item.icon}
+                    </motion.span>
+                    {item.label}
+                    {isActive && (
+                      <motion.div 
+                        layoutId="activeNav"
+                        className="ml-auto w-1.5 h-1.5 bg-indigo-600 rounded-full"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                  </>
+                )}
+              </NavLink>
             );
           })}
           
@@ -139,7 +157,7 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-10 shrink-0 sticky top-0 z-10">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-10 shrink-0 sticky top-0 z-[990]">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsSidebarOpen(true)}
@@ -179,11 +197,11 @@ const Layout: React.FC<LayoutProps> = ({
               {showNotifications && (
                 <>
                   <div 
-                    className="fixed inset-0 z-20" 
+                    className="fixed inset-0 z-[1010]" 
                     onClick={() => setShowNotifications(false)}
                   ></div>
                   <div 
-                    className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 z-[100] overflow-hidden origin-top-right"
+                    className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 z-[1020] overflow-hidden origin-top-right"
                     style={{ backgroundColor: '#ffffff', opacity: 1 }}
                   >
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white" style={{ backgroundColor: '#ffffff' }}>

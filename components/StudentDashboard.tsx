@@ -43,7 +43,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
               onClick={() => navigate('/lesson-planner')}
               className="px-6 py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20 hover:bg-white/20 transition-all active:scale-95 text-sm md:text-base"
             >
-              Lesson Plan
+              Activity Planner
             </button>
             <button 
               onClick={() => setShowQR(true)}

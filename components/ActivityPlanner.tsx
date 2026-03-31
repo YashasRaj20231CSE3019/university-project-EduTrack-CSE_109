@@ -104,12 +104,12 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
           </div>
           
           <h3 className="text-2xl font-black text-slate-800 mb-2">
-            {showManualForm ? 'Manual Entry' : 'Curriculum AI'}
+            {showManualForm ? 'Manual Entry' : 'Lesson Planner AI'}
           </h3>
           <p className="text-sm font-medium text-slate-500 mb-8 leading-relaxed">
             {showManualForm 
               ? 'Create a custom lesson activity without AI assistance.' 
-              : 'Let Gemini brainstorm creative and effective lesson activities tailored to your classroom needs.'}
+              : 'Let Gemini brainstorm creative and effective lesson plans tailored to your classroom needs.'}
           </p>
           
           {showManualForm ? (
@@ -120,7 +120,7 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
                   type="text" 
                   value={manualTitle}
                   onChange={(e) => setManualTitle(e.target.value)}
-                  placeholder="Activity Title"
+                  placeholder="Lesson Plan Title"
                   className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-none transition-all"
                 />
               </div>
@@ -147,7 +147,7 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
                 type="submit"
                 className="w-full py-5 bg-emerald-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all active:scale-95 hover:bg-emerald-700"
               >
-                Save Activity
+                Save Lesson Plan
               </button>
             </form>
           ) : (
@@ -221,7 +221,7 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
         {/* Current Plan Section */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-4">
-             <h3 className="text-2xl font-black text-slate-800">Active Curriculum</h3>
+             <h3 className="text-2xl font-black text-slate-800">Active Lesson Plans</h3>
              <div className="flex items-center gap-4">
                <button 
                 onClick={handleExportCSV}
@@ -260,7 +260,7 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
             ))}
             {activities.length === 0 && (
               <div className="col-span-full py-12 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 text-center">
-                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No activities in current plan</p>
+                <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No lesson plans in current plan</p>
               </div>
             )}
           </div>
