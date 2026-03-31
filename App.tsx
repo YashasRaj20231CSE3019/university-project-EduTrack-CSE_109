@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
+import { io, Socket } from 'socket.io-client';
 import Layout from './components/Layout';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
@@ -25,11 +26,53 @@ const App: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS as any);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
+  const socketRef = useRef<Socket | null>(null);
   
   const navigate = useNavigate();
   const location = useLocation();
+
+  const fetchInitialNotifications = async () => {
+    if (!currentUser) return;
+    try {
+      const { messages, announcements } = await apiService.getUnreadNotifications();
+      const newNotifications: Notification[] = [];
+
+      messages.forEach((m: any) => {
+        newNotifications.push({
+          id: `msg-${m.id}`,
+          title: 'Unread Message',
+          message: `From ${m.senderName || 'someone'}: ${m.text.substring(0, 30)}${m.text.length > 30 ? '...' : ''}`,
+          type: 'info',
+          time: new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          read: false
+        });
+      });
+
+      announcements.forEach((a: any) => {
+        newNotifications.push({
+          id: `ann-${a.id}`,
+          title: 'Recent Announcement',
+          message: a.title,
+          type: 'success',
+          time: new Date(a.createdAt).toLocaleDateString(),
+          read: false
+        });
+      });
+
+      if (newNotifications.length > 0) {
+        setNotifications(prev => {
+          const existingIds = new Set(prev.map(n => n.id));
+          const filtered = newNotifications.filter(n => !existingIds.has(n.id));
+          return [...filtered, ...prev];
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch initial notifications:', err);
+    }
+  };
 
   useEffect(() => {
     // Check for existing session
@@ -44,6 +87,71 @@ const App: React.FC = () => {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      setNotifications([]); // Clear notifications from previous user session
+      fetchInitialNotifications();
+      // Connect to socket
+      const socket = io();
+      socketRef.current = socket;
+
+      socket.on('connect', () => {
+        console.log('Connected to server via socket');
+        socket.emit('auth', currentUser.id);
+      });
+
+      socket.on('presence:update', (userIds: string[]) => {
+        setOnlineUserIds(userIds);
+      });
+
+      socket.on('message:new', (message: any) => {
+        console.log('New message received via socket:', message);
+        // Only notify if it's for the current user and not from themselves
+        if (String(message.receiverId) === String(currentUser.id)) {
+          const newNotification: Notification = {
+            id: `msg-${message.id || Date.now()}`,
+            title: 'New Message',
+            message: `You received a message from ${message.senderName || 'someone'}`,
+            type: 'info',
+            time: 'Just now',
+            read: false
+          };
+          console.log('Adding new notification:', newNotification);
+          setNotifications(prev => {
+            if (prev.some(n => n.id === newNotification.id)) return prev;
+            return [newNotification, ...prev];
+          });
+        }
+      });
+
+      socket.on('announcement:new', (announcement: any) => {
+        console.log('New announcement received via socket:', announcement);
+        // Check if announcement is for this user's role
+        if (announcement.targetRole === 'all' || announcement.targetRole === currentUser.role) {
+          const newNotification: Notification = {
+            id: `ann-${announcement.id || Date.now()}`,
+            title: 'New Announcement',
+            message: announcement.title,
+            type: 'success',
+            time: 'Just now',
+            read: false
+          };
+          console.log('Adding new announcement notification:', newNotification);
+          setNotifications(prev => {
+            if (prev.some(n => n.id === newNotification.id)) return prev;
+            return [newNotification, ...prev];
+          });
+        }
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    } else {
+      setNotifications([]);
+    }
+  }, [currentUser]);
 
   const fetchData = async () => {
     try {
@@ -179,6 +287,7 @@ const App: React.FC = () => {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
+    setNotifications([]);
     sessionStorage.setItem('edutrack_user', JSON.stringify(user));
     fetchData(); // Fetch data after login
     navigate('/');
@@ -186,6 +295,7 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    setNotifications([]);
     sessionStorage.removeItem('edutrack_user');
     apiService.logout();
     navigate('/login');
@@ -238,6 +348,8 @@ const App: React.FC = () => {
               activities={activities} 
               schedule={schedule} 
               currentUser={currentUser} 
+              onlineUserIds={onlineUserIds}
+              socket={socketRef.current}
               onSaveAttendance={handleSaveAttendance}
               onAddActivity={handleAddActivity}
               onUpdateActivity={handleUpdateActivity}
@@ -252,6 +364,8 @@ const App: React.FC = () => {
               schedule={schedule} 
               activities={activities} 
               currentUser={currentUser}
+              onlineUserIds={onlineUserIds}
+              socket={socketRef.current}
               onUpdateAssignment={handleUpdateAssignment}
               onUpdateStudent={handleUpdateStudent}
             />
@@ -268,13 +382,15 @@ const TeacherRoutes: React.FC<{
   activities: Activity[];
   schedule: ScheduleEntry[];
   currentUser: User;
+  onlineUserIds: string[];
+  socket: Socket | null;
   onSaveAttendance: (record: AttendanceRecord) => Promise<void>;
   onAddActivity: (act: Activity) => Promise<void>;
   onUpdateActivity: (id: string, updates: Partial<Activity>) => Promise<void>;
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
   onUpdateStudent: (updatedStudent: Student) => Promise<void>;
   fetchData: () => Promise<void>;
-}> = ({ students, attendance, activities, schedule, currentUser, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, fetchData }) => (
+}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, fetchData }) => (
   <Routes>
     <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} />} />
     <Route path="/attendance" element={<AttendanceSheet students={students} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
@@ -288,6 +404,8 @@ const TeacherRoutes: React.FC<{
         onUpdateStudent={onUpdateStudent}
         isTeacherView={true}
         currentUser={currentUser}
+        onlineUserIds={onlineUserIds}
+        socket={socket}
       />
     } />
     <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={onAddActivity} onUpdateActivity={onUpdateActivity} />} />
@@ -303,9 +421,11 @@ const StudentRoutes: React.FC<{
   schedule: ScheduleEntry[];
   activities: Activity[];
   currentUser: User;
+  onlineUserIds: string[];
+  socket: Socket | null;
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
   onUpdateStudent: (updatedStudent: Student) => Promise<void>;
-}> = ({ student, attendance, schedule, activities, currentUser, onUpdateAssignment, onUpdateStudent }) => {
+}> = ({ student, attendance, schedule, activities, currentUser, onlineUserIds, socket, onUpdateAssignment, onUpdateStudent }) => {
   const navigate = useNavigate();
   
   if (!student) {
@@ -334,6 +454,8 @@ const StudentRoutes: React.FC<{
           onBack={() => navigate('/')} 
           onUpdateStudent={onUpdateStudent}
           currentUser={currentUser}
+          onlineUserIds={onlineUserIds}
+          socket={socket}
         />
       } />
       <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
@@ -351,7 +473,9 @@ const StudentDetailsWrapper: React.FC<{
   onUpdateStudent: (updatedStudent: Student) => void;
   isTeacherView: boolean;
   currentUser: User;
-}> = ({ students, attendance, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser }) => {
+  onlineUserIds: string[];
+  socket: Socket | null;
+}> = ({ students, attendance, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser, onlineUserIds, socket }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const student = students.find(s => s.id === id);
@@ -369,6 +493,8 @@ const StudentDetailsWrapper: React.FC<{
       onUpdateStudent={onUpdateStudent}
       isTeacherView={isTeacherView}
       currentUser={currentUser}
+      onlineUserIds={onlineUserIds}
+      socket={socket}
     />
   );
 };

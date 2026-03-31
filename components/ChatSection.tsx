@@ -1,20 +1,25 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Socket } from 'socket.io-client';
 import { ChatUser, ChatMessage } from '../types';
 import { apiService } from '../services/apiService';
 
 interface ChatSectionProps {
   currentUserId: string;
+  onlineUserIds: string[];
+  socket: Socket | null;
   onClose: () => void;
 }
 
-const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onClose }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds, socket, onClose }) => {
   const [activeTab, setActiveTab] = useState<'students' | 'teachers'>('students');
   const [students, setStudents] = useState<ChatUser[]>([]);
   const [teachers, setTeachers] = useState<ChatUser[]>([]);
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -46,15 +51,72 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onClose }) => 
         try {
           const data = await apiService.getMessages(selectedUser.id);
           setMessages(data);
+          
+          // Reset unread count for this user locally
+          const resetUnread = (users: ChatUser[]) => 
+            users.map(u => u.id === selectedUser.id ? { ...u, unreadCount: 0 } : u);
+          setStudents(resetUnread);
+          setTeachers(resetUnread);
         } catch (err) {
           console.error('Failed to fetch messages:', err);
         }
       };
       fetchMessages();
-      const interval = setInterval(fetchMessages, 3000); // Poll for new messages
-      return () => clearInterval(interval);
     }
   }, [selectedUser]);
+
+  useEffect(() => {
+    if (socket) {
+      const handleNewMessage = (message: any) => {
+        console.log('ChatSection received message:', message);
+        
+        // If message is relevant to the current chat
+        const isFromSelected = selectedUser && String(message.senderId) === String(selectedUser.id);
+        const isToSelected = selectedUser && String(message.receiverId) === String(selectedUser.id) && String(message.senderId) === String(currentUserId);
+
+        if (isFromSelected || isToSelected) {
+          setMessages(prev => {
+            // Avoid duplicates (especially for the tab that sent the message)
+            if (prev.some(m => m.id === message.id)) return prev;
+            return [...prev, message];
+          });
+          
+          if (isFromSelected) {
+            // Mark as read on server
+            apiService.markMessageAsRead(message.senderId);
+          }
+        } else if (String(message.receiverId) === String(currentUserId)) {
+          // Update unread counts in the user lists
+          const updateUnread = (users: ChatUser[]) => 
+            users.map(u => String(u.id) === String(message.senderId) 
+              ? { ...u, unreadCount: (u.unreadCount || 0) + 1 } 
+              : u
+            );
+          
+          setStudents(updateUnread);
+          setTeachers(updateUnread);
+        }
+      };
+
+      const onUpdateMessage = (updatedMsg: any) => {
+        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
+      };
+
+      const onDeleteMessage = (id: string) => {
+        setMessages(prev => prev.filter(m => m.id !== id));
+      };
+
+      socket.on('message:new', handleNewMessage);
+      socket.on('message:update', onUpdateMessage);
+      socket.on('message:delete', onDeleteMessage);
+
+      return () => {
+        socket.off('message:new', handleNewMessage);
+        socket.off('message:update', onUpdateMessage);
+        socket.off('message:delete', onDeleteMessage);
+      };
+    }
+  }, [socket, selectedUser, currentUserId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,12 +129,43 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onClose }) => 
     setIsSending(true);
     try {
       const sentMsg = await apiService.sendMessage(selectedUser.id, newMessage);
-      setMessages(prev => [...prev, sentMsg]);
+      // We don't add it here because socket will handle it (or we can add it and socket handles duplicate)
+      // Actually, socket emits to sender too now.
+      // But to be safe and responsive:
+      setMessages(prev => {
+        if (prev.some(m => m.id === sentMsg.id)) return prev;
+        return [...prev, sentMsg];
+      });
       setNewMessage('');
     } catch (err) {
       console.error('Failed to send message:', err);
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleStartEdit = (msg: ChatMessage) => {
+    setEditingMessageId(msg.id);
+    setEditValue(msg.text);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingMessageId || !editValue.trim()) return;
+    try {
+      const updated = await apiService.editMessage(editingMessageId, editValue);
+      setMessages(prev => prev.map(m => m.id === updated.id ? updated : m));
+      setEditingMessageId(null);
+    } catch (err) {
+      console.error('Failed to edit message:', err);
+    }
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    try {
+      await apiService.deleteMessage(id);
+      setMessages(prev => prev.filter(m => m.id !== id));
+    } catch (err) {
+      console.error('Failed to delete message:', err);
     }
   };
 
@@ -138,13 +231,23 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onClose }) => 
                   selectedUser?.id === user.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm text-slate-700'
                 }`}
               >
-                <img src={user.avatar} className="w-8 h-8 md:w-10 md:h-10 rounded-xl object-cover shrink-0" alt={user.name} />
-                <div className="text-left overflow-hidden">
+                <div className="relative shrink-0">
+                  <img src={user.avatar} className="w-8 h-8 md:w-10 md:h-10 rounded-xl object-cover" alt={user.name} />
+                  {onlineUserIds.includes(user.id) && (
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+                  )}
+                </div>
+                <div className="text-left overflow-hidden flex-1">
                   <p className="text-[10px] md:text-xs font-black truncate leading-none mb-1">{user.name}</p>
                   <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-tighter truncate ${selectedUser?.id === user.id ? 'text-indigo-100' : 'text-slate-400'}`}>
                     {user.role}
                   </p>
                 </div>
+                {user.unreadCount && user.unreadCount > 0 && (
+                  <div className="bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center shadow-sm animate-bounce">
+                    {user.unreadCount}
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -155,28 +258,83 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onClose }) => 
           {selectedUser ? (
             <>
               <div className="p-4 border-b border-slate-100 flex items-center gap-3 shrink-0">
-                <img src={selectedUser.avatar} className="w-8 h-8 rounded-lg object-cover" alt={selectedUser.name} />
+                <div className="relative shrink-0">
+                  <img src={selectedUser.avatar} className="w-8 h-8 rounded-lg object-cover" alt={selectedUser.name} />
+                  {onlineUserIds.includes(selectedUser.id) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full" />
+                  )}
+                </div>
                 <div>
                   <p className="text-xs font-black text-slate-800 leading-none mb-1">{selectedUser.name}</p>
-                  <p className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Online</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className={`w-1.5 h-1.5 rounded-full ${onlineUserIds.includes(selectedUser.id) ? 'bg-green-500' : 'bg-slate-300'}`} />
+                    <p className={`text-[8px] font-bold uppercase tracking-widest ${onlineUserIds.includes(selectedUser.id) ? 'text-green-500' : 'text-slate-400'}`}>
+                      {onlineUserIds.includes(selectedUser.id) ? 'Online' : 'Offline'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50/30">
                 {messages.map((msg, idx) => (
                   <div 
-                    key={idx} 
-                    className={`flex ${msg.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
+                    key={msg.id || idx} 
+                    className={`flex group ${msg.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[80%] p-3 md:p-4 rounded-2xl text-xs md:text-sm font-medium shadow-sm ${
+                    <div className={`max-w-[80%] relative p-3 md:p-4 rounded-2xl text-xs md:text-sm font-medium shadow-sm ${
                       msg.senderId === currentUserId 
                         ? 'bg-indigo-600 text-white rounded-tr-none' 
                         : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
                     }`}>
-                      {msg.text}
-                      <p className={`text-[8px] mt-1 font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-indigo-200' : 'text-slate-400'}`}>
-                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      {editingMessageId === msg.id ? (
+                        <div className="flex flex-col gap-2 min-w-[200px]">
+                          <textarea
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white outline-none focus:bg-white/20 transition-all"
+                            rows={2}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => setEditingMessageId(null)}
+                              className="px-2 py-1 text-[10px] font-bold uppercase hover:underline"
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              onClick={handleSaveEdit}
+                              className="px-3 py-1 bg-white text-indigo-600 rounded-md text-[10px] font-black uppercase shadow-sm"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="whitespace-pre-wrap">{msg.text}</p>
+                          <div className="flex items-center justify-between mt-1 gap-4">
+                            <p className={`text-[8px] font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-indigo-200' : 'text-slate-400'}`}>
+                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                            {msg.senderId === currentUserId && (
+                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={() => handleStartEdit(msg)}
+                                  className="text-[8px] font-bold uppercase hover:text-white transition-colors"
+                                >
+                                  Edit
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteMessage(msg.id)}
+                                  className="text-[8px] font-bold uppercase text-rose-300 hover:text-rose-100 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Socket } from 'socket.io-client';
 import { Student, AttendanceRecord, Assignment } from '../types';
 import ProfileEditor from './ProfileEditor';
 import ChatSection from './ChatSection';
@@ -12,9 +13,11 @@ interface StudentDetailsProps {
   onUpdateStudent?: (updatedStudent: Student) => void;
   isTeacherView?: boolean;
   currentUser: any;
+  onlineUserIds: string[];
+  socket: Socket | null;
 }
 
-const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHistory, onBack, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser }) => {
+const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHistory, onBack, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser, onlineUserIds, socket }) => {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [gradeValue, setGradeValue] = useState('');
   const [commentsValue, setCommentsValue] = useState('');
@@ -110,6 +113,8 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
       {viewMode === 'chat' && (
         <ChatSection 
           currentUserId={currentUser.id} 
+          onlineUserIds={onlineUserIds}
+          socket={socket}
           onClose={() => setViewMode('details')}
         />
       )}

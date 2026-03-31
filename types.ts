@@ -125,6 +125,7 @@ export interface ChatUser {
   role: Role;
   avatar: string;
   email: string;
+  unreadCount?: number;
 }
 
 export interface AuthToken {

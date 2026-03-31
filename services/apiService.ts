@@ -215,6 +215,11 @@ export const apiService = {
     return res.json();
   },
 
+  async getUnreadNotifications(): Promise<{ messages: any[]; announcements: any[] }> {
+    const res = await this.apiFetch('/notifications/unread');
+    return res.json();
+  },
+
   async updateStudentProfile(id: string, updates: { name?: string; email?: string; avatar?: string }): Promise<void> {
     await this.apiFetch(`/students/${id}`, {
       method: 'PATCH',
@@ -233,5 +238,26 @@ export const apiService = {
       body: JSON.stringify({ receiverId, text })
     });
     return res.json();
+  },
+
+  async markMessageAsRead(senderId: string): Promise<void> {
+    await this.apiFetch('/messages/read', {
+      method: 'POST',
+      body: JSON.stringify({ senderId })
+    });
+  },
+  
+  async editMessage(id: string, text: string): Promise<any> {
+    const res = await this.apiFetch(`/messages/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ text })
+    });
+    return res.json();
+  },
+
+  async deleteMessage(id: string): Promise<void> {
+    await this.apiFetch(`/messages/${id}`, {
+      method: 'DELETE'
+    });
   }
 };

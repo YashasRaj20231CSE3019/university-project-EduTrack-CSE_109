@@ -6,6 +6,8 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import db, { initDb } from "./db.ts";
 import type { AuthToken } from "./types.ts";
 
@@ -43,7 +45,49 @@ const upload = multer({ storage });
 initDb();
 
 const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 const PORT = Number(process.env.PORT) || 3000;
+
+// Presence tracking
+const onlineUsers = new Map<string, string>(); // userId -> socketId
+
+io.on("connection", (socket) => {
+  console.log("New client connected:", socket.id);
+
+  socket.on("auth", (userId: any) => {
+    if (userId) {
+      const userIdStr = String(userId);
+      socket.join(userIdStr);
+      onlineUsers.set(userIdStr, socket.id); // Keep for presence tracking (last active)
+      console.log(`User ${userIdStr} joined room and is online`);
+      io.emit("presence:update", Array.from(onlineUsers.keys()));
+    }
+  });
+
+  socket.on("disconnect", () => {
+    let disconnectedUserId: string | null = null;
+    for (const [userId, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        disconnectedUserId = userId;
+        break;
+      }
+    }
+    if (disconnectedUserId) {
+      // Check if user has other sockets connected (in other tabs)
+      // This is a bit complex with just rooms, so we'll stick to the Map for presence
+      // but use rooms for messaging.
+      onlineUsers.delete(disconnectedUserId);
+      console.log(`User ${disconnectedUserId} went offline`);
+      io.emit("presence:update", Array.from(onlineUsers.keys()));
+    }
+  });
+});
 
 let JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
@@ -301,11 +345,26 @@ app.get("/api/announcements", requireAuth, (req: any, res) => {
 
 app.post("/api/announcements", requireTeacher, (req: any, res) => {
   const { id, title, message, priority, targetRole } = req.body;
+  const createdAt = new Date().toISOString();
+  const authorName = req.user.name;
+  
   const insert = db.prepare(`
     INSERT INTO announcements (id, title, message, priority, targetRole, createdAt, authorName)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
-  insert.run(id, title, message, priority, targetRole, new Date().toISOString(), req.user.name);
+  insert.run(id, title, message, priority, targetRole, createdAt, authorName);
+  
+  // Notify users via socket
+  io.emit("announcement:new", {
+    id,
+    title,
+    message,
+    priority,
+    targetRole,
+    authorName,
+    createdAt
+  });
+  
   res.json({ success: true });
 });
 
@@ -436,22 +495,77 @@ app.post("/api/attendance/import-csv", requireTeacher, upload.single("file"), (r
   }
 });
 
+// Notifications API
+app.get("/api/notifications/unread", requireAuth, (req: any, res) => {
+  const userId = req.user.id;
+  const role = req.user.role;
+
+  // Unread messages
+  const unreadMessages = db.prepare(`
+    SELECT m.*, t.name as senderName 
+    FROM messages m
+    LEFT JOIN teachers t ON m.senderId = t.id
+    WHERE m.receiverId = ? AND m.read = 0
+  `).all(userId) as any[];
+
+  // If sender wasn't a teacher, try student
+  unreadMessages.forEach(m => {
+    if (!m.senderName) {
+      const student = db.prepare('SELECT name FROM students WHERE id = ?').get(m.senderId) as any;
+      if (student) m.senderName = student.name;
+    }
+  });
+
+  // Recent announcements (last 24h)
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const recentAnnouncements = db.prepare(`
+    SELECT * FROM announcements 
+    WHERE (targetRole = 'all' OR targetRole = ?) 
+    AND createdAt > ?
+    ORDER BY createdAt DESC
+  `).all(role, oneDayAgo);
+
+  res.json({
+    messages: unreadMessages,
+    announcements: recentAnnouncements
+  });
+});
+
 // Users API
-app.get("/api/users", requireAuth, (req, res) => {
+app.get("/api/users", requireAuth, (req: any, res) => {
   try {
-    console.log('DEBUG: GET /api/users called - v2');
-    const students = db.prepare("SELECT id, name, email, avatar, 'student' as role FROM students").all();
+    const currentUserId = req.user.id;
+    const students = db.prepare("SELECT id, name, email, avatar, 'student' as role FROM students").all() as any[];
     
     // Ensure teachers table exists before querying
-    let teachers = [];
+    let teachers = [] as any[];
     try {
-      teachers = db.prepare("SELECT id, name, email, avatar, 'teacher' as role FROM teachers").all();
+      teachers = db.prepare("SELECT id, name, email, avatar, 'teacher' as role FROM teachers").all() as any[];
     } catch (e) {
       console.warn("Teachers table might not exist yet, returning empty list");
     }
     
-    console.log(`Found ${students.length} students and ${teachers.length} teachers`);
-    res.json({ students, teachers });
+    // Get unread counts for the current user
+    const unreadCounts = db.prepare(`
+      SELECT senderId, COUNT(*) as count 
+      FROM messages 
+      WHERE receiverId = ? AND read = 0 
+      GROUP BY senderId
+    `).all(currentUserId) as any[];
+
+    const unreadMap = new Map(unreadCounts.map(c => [c.senderId, c.count]));
+
+    const studentsWithUnread = students.map(s => ({
+      ...s,
+      unreadCount: unreadMap.get(s.id) || 0
+    }));
+
+    const teachersWithUnread = teachers.map(t => ({
+      ...t,
+      unreadCount: unreadMap.get(t.id) || 0
+    }));
+
+    res.json({ students: studentsWithUnread, teachers: teachersWithUnread });
   } catch (err) {
     console.error("Error in /api/users:", err);
     res.status(500).json({ message: "Failed to fetch users", error: String(err) });
@@ -483,7 +597,7 @@ app.patch("/api/students/:id", requireAuth, (req, res) => {
 });
 
 // Chat API
-app.get("/api/messages/:otherUserId", requireAuth, (req, res) => {
+app.get("/api/messages/:otherUserId", requireAuth, (req: any, res) => {
   const { otherUserId } = req.params;
   const userId = req.user!.id;
   
@@ -494,12 +608,23 @@ app.get("/api/messages/:otherUserId", requireAuth, (req, res) => {
     ORDER BY timestamp ASC
   `).all(userId, otherUserId, otherUserId, userId);
   
+  // Mark these messages as read
+  db.prepare('UPDATE messages SET read = 1 WHERE receiverId = ? AND senderId = ?').run(userId, otherUserId);
+  
   res.json(messages);
 });
 
-app.post("/api/messages", requireAuth, (req, res) => {
+app.post("/api/messages/read", requireAuth, (req: any, res) => {
+  const { senderId } = req.body;
+  const userId = req.user!.id;
+  db.prepare('UPDATE messages SET read = 1 WHERE receiverId = ? AND senderId = ?').run(userId, senderId);
+  res.json({ success: true });
+});
+
+app.post("/api/messages", requireAuth, (req: any, res) => {
   const { receiverId, text } = req.body;
   const senderId = req.user!.id;
+  const senderName = req.user!.name;
   const id = Math.random().toString(36).substr(2, 9);
   const timestamp = new Date().toISOString();
   
@@ -508,7 +633,48 @@ app.post("/api/messages", requireAuth, (req, res) => {
     VALUES (?, ?, ?, ?, ?, 0)
   `).run(id, senderId, receiverId, text, timestamp);
   
-  res.json({ id, senderId, receiverId, text, timestamp, read: 0 });
+  const message = { id, senderId, receiverId, text, timestamp, read: 0, senderName };
+  
+  // Notify both sender and receiver via socket rooms (supports multiple tabs)
+  io.to(String(senderId)).emit("message:new", message);
+  io.to(String(receiverId)).emit("message:new", message);
+  
+  res.json(message);
+});
+
+app.patch("/api/messages/:id", requireAuth, (req: any, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+  const userId = req.user!.id;
+
+  const message = db.prepare('SELECT * FROM messages WHERE id = ?').get(id) as any;
+  if (!message) return res.status(404).json({ message: 'Message not found' });
+  if (String(message.senderId) !== String(userId)) return res.status(403).json({ message: 'Unauthorized' });
+
+  db.prepare('UPDATE messages SET text = ? WHERE id = ?').run(text, id);
+  
+  const updatedMessage = { ...message, text };
+  
+  io.to(String(message.senderId)).emit("message:update", updatedMessage);
+  io.to(String(message.receiverId)).emit("message:update", updatedMessage);
+
+  res.json(updatedMessage);
+});
+
+app.delete("/api/messages/:id", requireAuth, (req: any, res) => {
+  const { id } = req.params;
+  const userId = req.user!.id;
+
+  const message = db.prepare('SELECT * FROM messages WHERE id = ?').get(id) as any;
+  if (!message) return res.status(404).json({ message: 'Message not found' });
+  if (String(message.senderId) !== String(userId)) return res.status(403).json({ message: 'Unauthorized' });
+
+  db.prepare('DELETE FROM messages WHERE id = ?').run(id);
+  
+  io.to(String(message.senderId)).emit("message:delete", id);
+  io.to(String(message.receiverId)).emit("message:delete", id);
+
+  res.json({ success: true });
 });
 
 // Vite middleware for development
@@ -527,7 +693,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 EduTrack Server running on http://localhost:${PORT}`);
   });
 }
