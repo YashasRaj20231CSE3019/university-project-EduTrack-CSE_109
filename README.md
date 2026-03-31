@@ -1,111 +1,100 @@
 
 # EduTrack: Smart Curriculum & Attendance
 
-EduTrack is a modern, full-stack education management system designed to streamline classroom operations. It features AI-powered lesson planning, secure QR-based attendance tracking, and persistent data storage using SQLite.
+EduTrack is a comprehensive, full-stack education management platform designed to modernize classroom operations. It bridges the gap between teachers and students through AI-powered tools, real-time communication, and secure attendance tracking.
 
-## 🚀 Features
+## 🌟 Key Modules
 
-- **Teacher Dashboard:** Comprehensive overview of class attendance, upcoming activities, and student performance.
-- **Student Dashboard:** Personalized view for students to track their schedule, assignments, and academic progress.
-- **AI Lesson Planner:** Generate creative and structured lesson plans using Google Gemini AI integration.
-- **QR Attendance:** Secure, time-sensitive QR code system for touchless attendance marking.
-- **Persistent Storage:** Full SQLite database integration ensures all data is saved permanently.
-- **Responsive Design:** Fully optimized for mobile, tablet, and desktop devices using Tailwind CSS.
+### 👨‍🏫 Teacher Suite
+- **Dynamic Dashboard:** Real-time overview of class attendance, upcoming activities, and student performance metrics.
+- **AI Lesson Planner:** Leverage Google Gemini AI to generate creative, structured, and objective-driven lesson plans in seconds.
+- **Smart Attendance:** Generate time-sensitive, secure QR codes for touchless and fraud-proof attendance marking.
+- **Classroom Management:** View detailed student profiles, behavioral notes, and academic progress.
+
+### 🎓 Student Portal
+- **Personalized Experience:** Track individual schedules, pending assignments, and graded performance.
+- **Real-time Notifications:** Stay updated with instant alerts for new messages from teachers and school-wide announcements.
+- **Attendance Check-in:** Scan teacher-generated QR codes to mark presence instantly.
+
+### 💬 Real-time Communication
+- **Private Messaging:** Secure, instant chat between teachers and students with read receipts and unread indicators.
+- **Broadcast Announcements:** Teachers can send urgent updates to the entire class or specific roles.
+- **Presence Tracking:** See who is currently online with live status indicators.
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** React 18, Vite, Tailwind CSS, Lucide Icons, Recharts.
-- **Backend:** Node.js, Express, JWT (for secure QR tokens).
-- **Database:** SQLite (via `better-sqlite3`).
-- **AI:** Google Gemini API (`@google/genai`).
-
-## 📋 Prerequisites
-
-- **Node.js:** version 18.0.0 or higher.
-- **npm:** usually comes with Node.js.
-
-## ⚙️ Setup and Installation
-
-### 1. Clone and Install Dependencies
-
-Open your terminal (Mac/Linux) or Command Prompt/PowerShell (Windows) and run:
-
-```bash
-# Install all required packages
-npm install
-```
-
-### 2. Environment Configuration
-
-Create a `.env` file in the root directory and add your Gemini API key:
-
-```env
-GEMINI_API_KEY=your_api_key_here
-JWT_SECRET=your_random_secret_string
-```
-
-### 3. Run the Application (Node.js - Recommended)
-
-#### **macOS / Linux / Windows**
-```bash
-# Start the full-stack development server
-npm run dev
-```
-The application will be accessible at [http://localhost:3000](http://localhost:3000).
+- **Frontend:** React 18, Vite, Tailwind CSS, Framer Motion, Lucide Icons, Recharts.
+- **Backend:** Node.js, Express, Socket.io (Real-time), JWT (Security).
+- **Database:** SQLite (via `better-sqlite3`) for persistent, reliable data storage.
+- **AI Integration:** Google Gemini API (`@google/genai`).
 
 ---
 
-### 🐍 Python Local Setup (Alternative Static Server)
+## 💻 Local Setup & Installation
 
-If you prefer to run the static version of the app using Python and a virtual environment (`venv`):
+Follow these steps to get EduTrack running on your local machine.
 
-#### **macOS / Linux**
+### 📋 Prerequisites
+- **Node.js:** version 18.0.0 or higher ([Download here](https://nodejs.org/))
+- **npm:** usually comes bundled with Node.js.
+
+### 1. Clone the Repository
+Open your terminal (Mac) or Command Prompt/PowerShell (Windows):
 ```bash
-# 1. Create a virtual environment
-python3 -m venv venv
-
-# 2. Activate the virtual environment
-source venv/bin/activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Run the server
-python server.py
+git clone <your-repo-url>
+cd edutrack
 ```
 
-#### **Windows**
+### 2. Install Dependencies
 ```bash
-# 1. Create a virtual environment
-python -m venv venv
-
-# 2. Activate the virtual environment
-# In Command Prompt:
-venv\Scripts\activate
-# In PowerShell:
-.\venv\Scripts\Activate.ps1
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Run the server
-python server.py
+npm install
 ```
-The static server will be accessible at [http://localhost:8000](http://localhost:8000).
+
+### 3. Environment Configuration
+Create a file named `.env` in the root directory and add the following:
+```env
+GEMINI_API_KEY=your_google_gemini_api_key
+JWT_SECRET=a_secure_random_string_for_tokens
+```
+*Note: You can get a Gemini API key for free at [aistudio.google.com](https://aistudio.google.com/).*
+
+### 4. Running the Application
+
+#### **🍎 macOS / Linux**
+1. Open Terminal.
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+#### **🪟 Windows**
+1. Open **PowerShell** or **Command Prompt**.
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
 ## 📂 Project Structure
 
-- `/src`: React frontend components and logic.
-- `/services`: API and AI service integrations.
-- `server.ts`: Express server and API endpoints.
-- `db.ts`: SQLite database initialization and seeding.
-- `constants.tsx`: Initial mock data and system constants.
-- `credentials.csv`: Excel-compatible list of student and teacher login details.
-- `CREDENTIALS.md`: Markdown table of login credentials for quick reference.
+- **`/src`**: React frontend source code.
+- **`/components`**: Reusable UI components (Dashboard, Chat, Attendance, etc.).
+- **`/services`**: API service layer and AI integration logic.
+- **`server.ts`**: Express & Socket.io server implementation.
+- **`db.ts`**: SQLite database schema and seeding logic.
+- **`types.ts`**: Global TypeScript definitions.
+- **`credentials.csv`**: List of test accounts for students and teachers.
 
-## 🛡️ Security
+## 🛡️ Security & Reliability
+- **JWT Authentication:** Secure session management and QR code validation.
+- **Socket.io Rooms:** Isolated communication channels for private messaging.
+- **SQLite Persistence:** All chat history, attendance records, and lesson plans are saved permanently in `edutrack.db`.
 
-- QR tokens are signed with JWT and expire after 30 seconds to prevent replay attacks.
-- Sensitive API keys are managed via environment variables.
+## 🤝 Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+*Developed with ❤️ for the future of education.*
