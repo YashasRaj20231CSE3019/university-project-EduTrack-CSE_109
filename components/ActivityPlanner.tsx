@@ -3,6 +3,15 @@ import React, { useState } from 'react';
 import { generateActivityIdeas } from '../services/geminiService';
 import { ActivitySuggestion, Activity } from '../types';
 import { exportToCSV } from '../src/utils/csvExport';
+import { 
+  Wand2, 
+  Download, 
+  Scan, 
+  Calculator, 
+  Book, 
+  Check, 
+  Package 
+} from 'lucide-react';
 
 interface ActivityPlannerProps {
   activities: Activity[];
@@ -92,8 +101,8 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
       <div className="lg:col-span-4 space-y-6">
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm sticky top-28">
           <div className="flex items-center justify-between mb-6">
-            <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-3xl shadow-xl shadow-indigo-100">
-              🪄
+            <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-indigo-100">
+              <Wand2 className="w-8 h-8" />
             </div>
             <button 
               onClick={() => setShowManualForm(!showManualForm)}
@@ -227,7 +236,7 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
                 onClick={handleExportCSV}
                 className="text-xs font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-2"
                >
-                 <span>📥</span> EXPORT REPORT
+                 <Download className="w-4 h-4" /> EXPORT REPORT
                </button>
                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{activities.length} PLANNED</span>
              </div>
@@ -238,7 +247,7 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
               <div key={act.id} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-md transition-all group">
                 <div className="flex justify-between items-start mb-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl ${act.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
-                    {act.subject === 'Science' ? '🧪' : act.subject === 'Math' ? '📐' : '📖'}
+                    {act.subject === 'Science' ? <Scan className="w-6 h-6" /> : act.subject === 'Math' ? <Calculator className="w-6 h-6" /> : <Book className="w-6 h-6" />}
                   </div>
                   <button 
                     onClick={() => onUpdateActivity(act.id, { status: act.status === 'completed' ? 'planned' : 'completed' })}
@@ -308,7 +317,9 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
                         <ul className="space-y-3">
                           {s.learningObjectives.map((obj, i) => (
                             <li key={i} className="flex items-start gap-4">
-                              <span className="w-5 h-5 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full text-xs shrink-0 mt-0.5 font-bold">✓</span>
+                              <span className="w-5 h-5 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full shrink-0 mt-0.5">
+                                <Check className="w-3 h-3 font-bold" />
+                              </span>
                               <span className="text-sm text-slate-700 font-bold">{obj}</span>
                             </li>
                           ))}
@@ -318,8 +329,8 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ activities, onAddActi
                         <h5 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Required Assets</h5>
                         <div className="flex flex-wrap gap-2">
                           {s.materials.map((mat, i) => (
-                            <span key={i} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-indigo-400 transition-colors">
-                              📦 {mat}
+                            <span key={i} className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl shadow-sm hover:border-indigo-400 transition-colors">
+                              <Package className="w-3 h-3 text-slate-400" /> {mat}
                             </span>
                           ))}
                         </div>

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Student, Assignment } from '../types';
 import FileUpload from './FileUpload';
 import { apiService } from '../services/apiService';
+import { BookOpen, Hourglass, CheckCircle2, Search, FlaskConical, Calculator, FileText, X, File } from 'lucide-react';
 
 interface AssignmentsViewProps {
   student: Student;
@@ -79,21 +80,21 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
       {/* Header Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg md:text-xl">📚</div>
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center"><BookOpen className="w-5 h-5 md:w-6 md:h-6" /></div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Issued</p>
             <p className="text-xl md:text-2xl font-black text-slate-800">{stats.total}</p>
           </div>
         </div>
         <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg md:text-xl">⏳</div>
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center"><Hourglass className="w-5 h-5 md:w-6 md:h-6" /></div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action Required</p>
             <p className="text-xl md:text-2xl font-black text-slate-800">{stats.pending}</p>
           </div>
         </div>
         <div className="bg-white p-4 md:p-6 rounded-[2rem] border border-slate-200 shadow-sm flex items-center gap-4 sm:col-span-2 md:col-span-1">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-lg md:text-xl">✅</div>
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center"><CheckCircle2 className="w-5 h-5 md:w-6 md:h-6" /></div>
           <div>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Completed</p>
             <p className="text-xl md:text-2xl font-black text-slate-800">{stats.completed}</p>
@@ -119,7 +120,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
           </div>
 
           <div className="relative w-full lg:w-96 group">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search assignments..."
@@ -148,7 +149,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                       as.subject === 'Science' ? 'bg-emerald-50 text-emerald-600' : 
                       as.subject === 'Math' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'
                     }`}>
-                      <span className="text-xl md:text-2xl">{as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📝'}</span>
+                      {as.subject === 'Science' ? <FlaskConical className="w-5 h-5 md:w-6 md:h-6" /> : as.subject === 'Math' ? <Calculator className="w-5 h-5 md:w-6 md:h-6" /> : <FileText className="w-5 h-5 md:w-6 md:h-6" />}
                     </div>
                     <span className={`text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full uppercase tracking-widest ${
                       as.status === 'graded' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
@@ -179,7 +180,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-32 text-center px-10">
-              <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center text-4xl mb-6 shadow-inner">📚</div>
+              <div className="w-24 h-24 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mb-6 shadow-inner"><BookOpen className="w-10 h-10 text-slate-400" /></div>
               <h4 className="text-2xl font-black text-slate-800 mb-2">No assignments found</h4>
               <p className="text-slate-500 font-medium max-w-xs">Try changing your filters or search term.</p>
             </div>
@@ -200,7 +201,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                 className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
                 aria-label="Close assignment"
                >
-                 <span className="text-2xl md:text-3xl font-black">×</span>
+                 <X className="w-6 h-6 md:w-8 md:h-8" />
                </button>
                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-2">{selectedAssignment.subject}</p>
                <h3 className="text-xl md:text-3xl font-black mb-4">{selectedAssignment.title}</h3>
@@ -268,7 +269,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                           </div>
                           {selectedAssignment.submissionFile && (
                             <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
-                              <span className="text-xl">📄</span>
+                              <File className="w-5 h-5 text-slate-400" />
                               <div className="flex-1 overflow-hidden">
                                 <p className="text-xs font-black text-slate-800 truncate">{selectedAssignment.submissionFile.split('/').pop()}</p>
                                 <p className="text-[8px] font-bold text-slate-400 uppercase">Uploaded File</p>

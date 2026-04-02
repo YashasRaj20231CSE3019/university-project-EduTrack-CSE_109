@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+import { FileText, Upload } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -67,10 +68,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
         className="hidden"
       />
 
-      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-transform duration-300 ${
+      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform duration-300 ${
         isDragging ? 'scale-110 rotate-12' : 'group-hover:scale-110'
       } ${selectedFile ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
-        {selectedFile ? '📄' : '📤'}
+        {selectedFile ? <FileText className="w-8 h-8" /> : <Upload className="w-8 h-8" />}
       </div>
 
       <div className="text-center">

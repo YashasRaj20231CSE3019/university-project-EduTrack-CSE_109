@@ -4,6 +4,20 @@ import Markdown from 'react-markdown';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Student, AttendanceRecord, Activity } from '../types';
 import { generateWeeklyReport } from '../services/aiService';
+import { 
+  Users, 
+  TrendingUp, 
+  Clock, 
+  Trophy, 
+  LayoutDashboard, 
+  CalendarDays, 
+  Scan, 
+  Calculator, 
+  Book,
+  Sparkles,
+  Check,
+  X
+} from 'lucide-react';
 
 interface DashboardProps {
   students: Student[];
@@ -43,10 +57,10 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
   ];
 
   const stats = [
-    { label: 'Enrolled Students', value: students.length, color: 'blue', icon: '👥', trend: '+2%' },
-    { label: 'Avg. Attendance', value: `${attendanceRate}%`, color: 'emerald', icon: '📈', trend: '+1.5%' },
-    { label: 'Active Activities', value: activities.filter(a => a.status === 'planned').length, color: 'amber', icon: '⏳', trend: 'Stable' },
-    { label: 'Completed Tasks', value: activities.filter(a => a.status === 'completed').length, color: 'indigo', icon: '🏆', trend: '8 today' },
+    { label: 'Enrolled Students', value: students.length, color: 'blue', icon: <Users className="w-6 h-6" />, trend: '+2%' },
+    { label: 'Avg. Attendance', value: `${attendanceRate}%`, color: 'emerald', icon: <TrendingUp className="w-6 h-6" />, trend: '+1.5%' },
+    { label: 'Active Activities', value: activities.filter(a => a.status === 'planned').length, color: 'amber', icon: <Clock className="w-6 h-6" />, trend: 'Stable' },
+    { label: 'Completed Tasks', value: activities.filter(a => a.status === 'completed').length, color: 'indigo', icon: <Trophy className="w-6 h-6" />, trend: '8 today' },
   ];
 
   return (
@@ -54,7 +68,9 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
       {/* Hero Section */}
       <div className="bg-indigo-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl shadow-indigo-200">
         <div className="relative z-10 max-w-lg text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Welcome back, Dr. Miller! 👋</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight flex items-center justify-center md:justify-start gap-3">
+            Welcome back, Dr. Miller! <Sparkles className="w-8 h-8 text-amber-300" />
+          </h1>
           <p className="text-indigo-100 text-sm md:text-lg mb-6">Your classroom is performing 12% better than the school average this week. Keep it up!</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
             <button 
@@ -69,15 +85,15 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
                 </>
               ) : (
                 <>
-                  <span>📊</span> Generate Weekly Report
+                  <LayoutDashboard className="w-5 h-5" /> Generate Weekly Report
                 </>
               )}
             </button>
             <button 
               onClick={() => setShowCalendar(true)}
-              className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95 text-sm md:text-base"
+              className="px-6 py-3 bg-indigo-500/50 text-white font-bold rounded-xl border border-white/20 hover:bg-indigo-500/70 transition-all active:scale-95 text-sm md:text-base flex items-center justify-center gap-2"
             >
-              View Calendar
+              <CalendarDays className="w-5 h-5" /> View Calendar
             </button>
           </div>
         </div>
@@ -178,7 +194,11 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
                 <div className={`w-12 h-12 flex items-center justify-center rounded-2xl shrink-0 transition-transform group-hover:scale-110 ${
                   act.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
                 }`}>
-                   <span className="text-xl">{act.subject === 'Science' ? '🧪' : act.subject === 'Math' ? '📐' : '📖'}</span>
+                   <span className="text-xl">
+                     {act.subject === 'Science' ? <Scan className="w-6 h-6" /> : 
+                      act.subject === 'Math' ? <Calculator className="w-6 h-6" /> : 
+                      <Book className="w-6 h-6" />}
+                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-slate-800 truncate leading-snug">{act.title}</h4>
@@ -186,7 +206,7 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
                 </div>
                 <div className="shrink-0">
                   {act.status === 'completed' ? (
-                    <span className="text-emerald-500 font-black text-xl">✓</span>
+                    <Check className="w-5 h-5 text-emerald-500" />
                   ) : (
                     <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></div>
                   )}
@@ -213,14 +233,14 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
               <div className="relative z-10 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">AI Insights</p>
-                  <h3 className="text-2xl font-black">Weekly Performance Report 📈</h3>
+                  <h3 className="text-2xl font-black flex items-center gap-2">Weekly Performance Report <TrendingUp className="w-6 h-6" /></h3>
                 </div>
                 <button 
                   onClick={() => setShowReport(false)}
                   className="absolute top-4 right-4 z-[100] w-10 h-10 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
                   aria-label="Close report"
                 >
-                  <span className="text-2xl font-black">×</span>
+                  <X className="w-6 h-6" />
                 </button>
               </div>
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
@@ -254,7 +274,7 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
           <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 my-auto">
             <div className="bg-slate-800 p-8 text-white flex justify-between items-center">
               <div>
-                <h3 className="text-2xl font-black">Weekly Class Calendar 📅</h3>
+                <h3 className="text-2xl font-black flex items-center gap-2">Weekly Class Calendar <CalendarDays className="w-6 h-6" /></h3>
                 <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">March 10 - March 14, 2026</p>
               </div>
               <button 
@@ -262,7 +282,7 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities 
                 className="absolute top-4 right-4 z-[100] w-10 h-10 bg-white text-slate-800 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
                 aria-label="Close calendar"
               >
-                <span className="text-2xl font-black">×</span>
+                <X className="w-6 h-6" />
               </button>
             </div>
             <div className="p-8 overflow-x-auto">

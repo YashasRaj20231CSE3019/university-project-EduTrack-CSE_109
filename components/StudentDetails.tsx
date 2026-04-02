@@ -4,6 +4,21 @@ import { Socket } from 'socket.io-client';
 import { Student, AttendanceRecord, Assignment } from '../types';
 import ProfileEditor from './ProfileEditor';
 import ChatSection from './ChatSection';
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  BookOpen, 
+  Users, 
+  User as UserIcon, 
+  Phone, 
+  Mail, 
+  Scan, 
+  Calculator, 
+  Book, 
+  X, 
+  FileText, 
+  Target 
+} from 'lucide-react';
 
 interface StudentDetailsProps {
   student: Student;
@@ -62,7 +77,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
         onClick={onBack}
         className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors"
       >
-        <span>←</span> Back to Directory
+        <ArrowLeft className="w-4 h-4" /> Back to Directory
       </button>
 
       <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
@@ -149,7 +164,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
         <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h4 className="font-black text-slate-800 uppercase text-[10px] md:text-xs tracking-widest flex items-center gap-2">
-              <span>📓</span> Behavioral Journal
+              <BookOpen className="w-4 h-4 text-slate-500" /> Behavioral Journal
             </h4>
             <button className="text-indigo-600 text-[8px] md:text-[10px] font-black uppercase tracking-widest hover:underline">+ NEW NOTE</button>
           </div>
@@ -157,7 +172,9 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
             {student.behavioralNotes && student.behavioralNotes.length > 0 ? (
               student.behavioralNotes.map((note, idx) => (
                 <div key={idx} className="p-4 md:p-5 bg-slate-50 rounded-2xl border border-slate-100 flex gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">✨</div>
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
                   <p className="text-xs md:text-sm font-medium text-slate-600 leading-relaxed">{note}</p>
                 </div>
               ))
@@ -173,7 +190,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
         <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
             <h4 className="font-black text-slate-800 uppercase text-[10px] md:text-xs tracking-widest flex items-center gap-2">
-              <span>👨‍👩‍👧</span> Guardian Information
+              <Users className="w-4 h-4 text-slate-500" /> Guardian Information
             </h4>
           </div>
           <div className="p-6 md:p-8 space-y-6 md:space-y-8">
@@ -182,7 +199,9 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Primary Contact</p>
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-100 flex items-center justify-center text-lg md:text-xl">👤</div>
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
+                      <UserIcon className="w-5 h-5 md:w-6 md:h-6" />
+                    </div>
                     <div>
                       <p className="text-sm md:text-base font-black text-slate-800 leading-none mb-1">{student.parentContact.name}</p>
                       <p className="text-[10px] md:text-xs font-bold text-indigo-600 uppercase tracking-widest">{student.parentContact.relation}</p>
@@ -192,14 +211,18 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">📞</div>
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                      <Phone className="w-4 h-4 md:w-5 md:h-5" />
+                    </div>
                     <div>
                       <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</p>
                       <p className="text-xs md:text-sm font-black text-slate-800">{student.parentContact.phone}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 group cursor-pointer">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">✉️</div>
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <Mail className="w-4 h-4 md:w-5 md:h-5" />
+                    </div>
                     <div className="overflow-hidden">
                       <p className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</p>
                       <p className="text-xs md:text-sm font-black text-slate-800 truncate">{student.parentContact.email}</p>
@@ -240,7 +263,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                   <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center text-base md:text-lg ${
                     as.status === 'graded' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                   }`}>
-                    {as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📖'}
+                    {as.subject === 'Science' ? <Scan className="w-4 h-4 md:w-5 md:h-5" /> : as.subject === 'Math' ? <Calculator className="w-4 h-4 md:w-5 md:h-5" /> : <Book className="w-4 h-4 md:w-5 md:h-5" />}
                   </div>
                   <div>
                     <p className="text-xs md:text-sm font-black text-slate-800 group-hover:text-indigo-600 transition-colors leading-none mb-1">{as.title}</p>
@@ -307,7 +330,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                   className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
                   aria-label="Close grading"
                 >
-                  <span className="text-2xl md:text-3xl font-black">×</span>
+                  <X className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
                 <div className="flex items-center gap-3 mb-2">
                    <span className="px-3 py-1 bg-white/20 rounded-lg text-[8px] md:text-[10px] font-black uppercase tracking-widest border border-white/20">GRADING</span>
@@ -337,7 +360,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                       <div>
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Attached File</h4>
                         <div className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200">
-                          <span className="text-xl">📄</span>
+                          <FileText className="w-5 h-5 text-slate-400" />
                           <div className="flex-1 overflow-hidden">
                             <p className="text-xs font-black text-slate-800 truncate">{selectedAssignment.submissionFile}</p>
                             <p className="text-[8px] font-bold text-slate-400 uppercase">Student Uploaded File</p>
@@ -365,7 +388,9 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                         placeholder="e.g. A, 95%, Excellent"
                         className="flex-1 px-4 md:px-6 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-2xl text-base md:text-lg font-black text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 focus:outline-none transition-all placeholder:text-slate-300"
                       />
-                      <div className="w-16 md:w-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl md:text-3xl">🎯</div>
+                      <div className="w-16 md:w-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                        <Target className="w-6 h-6 md:w-8 md:h-8" />
+                      </div>
                    </div>
                 </div>
 

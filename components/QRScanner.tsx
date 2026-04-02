@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { User } from '../types';
 import { apiService } from '../services/apiService';
+import { X, Camera, CheckCircle2, XCircle, Zap, ShieldCheck } from 'lucide-react';
 
 interface QRScannerProps {
   teacher: User;
@@ -96,18 +97,18 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 md:p-6 bg-slate-900/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-2xl rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden flex flex-col my-auto max-h-none md:max-h-[95vh]">
-        <div className="p-6 md:p-10 bg-indigo-600 text-white relative text-center shrink-0">
+    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-start p-4 md:p-8 bg-slate-900/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-2xl rounded-[2.5rem] md:rounded-[3rem] shadow-2xl relative animate-in zoom-in slide-in-from-bottom-8 duration-500 overflow-hidden flex flex-col my-auto">
+        <div className="p-8 md:p-12 bg-indigo-600 text-white relative text-center shrink-0">
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 md:top-6 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+            className="absolute top-6 right-6 md:top-8 md:right-8 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
             aria-label="Close scanner"
           >
-            <span className="text-2xl md:text-3xl font-black">×</span>
+            <X className="w-6 h-6 md:w-8 md:h-8" />
           </button>
           
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-2xl md:rounded-[2rem] flex items-center justify-center text-3xl md:text-4xl mx-auto mb-4 md:mb-6">📷</div>
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 rounded-2xl md:rounded-[2rem] flex items-center justify-center mx-auto mb-4 md:mb-6"><Camera className="w-8 h-8 md:w-10 md:h-10" /></div>
           <h3 className="text-2xl md:text-3xl font-black mb-1 md:mb-2">Attendance Scanner</h3>
           <p className="text-xs md:text-sm font-medium opacity-80">Scan student QR codes to mark attendance</p>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
@@ -129,7 +130,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
                   
                   {successMessage && (
                     <>
-                      <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto animate-bounce">✅</div>
+                      <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto animate-bounce"><CheckCircle2 className="w-10 h-10" /></div>
                       <p className="text-xl font-black text-emerald-600">{successMessage}</p>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ready for next scan</p>
                     </>
@@ -137,7 +138,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
                   
                   {error && (
                     <>
-                      <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center text-4xl mx-auto animate-shake">❌</div>
+                      <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto animate-shake"><XCircle className="w-10 h-10" /></div>
                       <p className="text-xl font-black text-rose-600">{error}</p>
                       <button 
                         onClick={() => { setError(null); setIsVerifying(false); }}
@@ -154,7 +155,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-start gap-4">
-              <span className="text-xl">⚡</span>
+              <Zap className="w-5 h-5 text-indigo-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-black text-indigo-800 uppercase tracking-widest mb-1">Fast Scanning</p>
                 <p className="text-[10px] font-bold text-indigo-700 leading-relaxed">
@@ -163,7 +164,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
               </div>
             </div>
             <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
-              <span className="text-xl">🛡️</span>
+              <ShieldCheck className="w-5 h-5 text-slate-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-1">Secure Validation</p>
                 <p className="text-[10px] font-bold text-slate-700 leading-relaxed">

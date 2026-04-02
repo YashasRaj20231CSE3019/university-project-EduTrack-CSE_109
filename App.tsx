@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
   const [loading, setLoading] = useState(true);
   const [onlineUserIds, setOnlineUserIds] = useState<string[]>([]);
   const socketRef = useRef<Socket | null>(null);
@@ -47,7 +47,8 @@ const App: React.FC = () => {
           message: `From ${m.senderName || 'someone'}: ${m.text.substring(0, 30)}${m.text.length > 30 ? '...' : ''}`,
           type: 'info',
           time: new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          read: false
+          read: false,
+          link: `/messages?userId=${m.senderId}`
         });
       });
 
@@ -58,7 +59,8 @@ const App: React.FC = () => {
           message: a.title,
           type: 'success',
           time: new Date(a.createdAt).toLocaleDateString(),
-          read: false
+          read: false,
+          link: `/announcements#${a.id}`
         });
       });
 
@@ -90,7 +92,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (currentUser) {
-      setNotifications([]); // Clear notifications from previous user session
+      setNotifications(INITIAL_NOTIFICATIONS); // Set initial notifications
       fetchInitialNotifications();
       // Connect to socket
       const socket = io();
@@ -115,7 +117,8 @@ const App: React.FC = () => {
             message: `You received a message from ${message.senderName || 'someone'}`,
             type: 'info',
             time: 'Just now',
-            read: false
+            read: false,
+            link: `/messages?userId=${message.senderId}`
           };
           console.log('Adding new notification:', newNotification);
           setNotifications(prev => {
@@ -135,7 +138,8 @@ const App: React.FC = () => {
             message: announcement.title,
             type: 'success',
             time: 'Just now',
-            read: false
+            read: false,
+            link: `/announcements#${announcement.id}`
           };
           console.log('Adding new announcement notification:', newNotification);
           setNotifications(prev => {
@@ -287,7 +291,7 @@ const App: React.FC = () => {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    setNotifications([]);
+    setNotifications(INITIAL_NOTIFICATIONS);
     sessionStorage.setItem('edutrack_user', JSON.stringify(user));
     fetchData(); // Fetch data after login
     navigate('/');
@@ -411,6 +415,7 @@ const TeacherRoutes: React.FC<{
     <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={onAddActivity} onUpdateActivity={onUpdateActivity} />} />
     <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
     <Route path="/parents" element={<ParentPortal />} />
+    <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
@@ -459,13 +464,39 @@ const StudentRoutes: React.FC<{
         />
       } />
       <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
+      <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
 
 // Helper component to handle student ID from URL
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import ChatSection from './components/ChatSection';
+
+const MessagesWrapper: React.FC<{
+  currentUser: User;
+  onlineUserIds: string[];
+  socket: Socket | null;
+}> = ({ currentUser, onlineUserIds, socket }) => {
+  const [searchParams] = useSearchParams();
+  const userId = searchParams.get('userId') || undefined;
+  const navigate = useNavigate();
+
+  return (
+    <div className="h-[calc(100vh-8rem)]">
+      <ChatSection 
+        currentUserId={currentUser.id} 
+        onlineUserIds={onlineUserIds}
+        socket={socket}
+        initialSelectedUserId={userId}
+        onClose={() => navigate(-1)}
+        fullHeight
+      />
+    </div>
+  );
+};
+
 const StudentDetailsWrapper: React.FC<{
   students: Student[];
   attendance: AttendanceRecord[];

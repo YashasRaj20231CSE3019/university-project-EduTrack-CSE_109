@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ScheduleEntry } from '../types';
+import { Printer, CalendarDays } from 'lucide-react';
 
 interface ScheduleViewProps {
   schedule: ScheduleEntry[];
@@ -47,7 +48,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
               </button>
             </div>
             <button className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-all uppercase tracking-widest hidden lg:flex items-center gap-2 shadow-lg shadow-slate-100 active:scale-95">
-              <span>🖨️</span> PRINT
+              <Printer className="w-4 h-4" /> PRINT
             </button>
           </div>
         </div>
@@ -151,14 +152,14 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
         <div className="bg-indigo-600 p-8 rounded-[2rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover:scale-125 transition-transform duration-700"></div>
           <h4 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <span>📅</span> Coming Up Next
+            <CalendarDays className="w-5 h-5" /> Coming Up Next
           </h4>
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
              <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest mb-1">08:00 AM • Room 302A</p>
              <p className="text-lg font-black mb-4 truncate">Advanced Algebra: Finals Prep</p>
              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-bold">PX</div>
-                <span className="text-xs font-bold text-indigo-100">Prof. X • Class 9A</span>
+                <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center text-[10px] font-bold">PV</div>
+                <span className="text-xs font-bold text-indigo-100">Prof. Verma • Class 9A</span>
              </div>
           </div>
         </div>

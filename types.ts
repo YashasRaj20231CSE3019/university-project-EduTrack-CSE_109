@@ -74,6 +74,7 @@ export interface Notification {
   time: string;
   read: boolean;
   type: 'info' | 'success' | 'warning' | 'error';
+  link?: string;
 }
 
 export interface ActivitySuggestion {

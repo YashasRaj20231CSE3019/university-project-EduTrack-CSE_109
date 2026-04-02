@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Markdown from 'react-markdown';
 import { Activity, Student } from '../types';
 import { explainLesson, explainCurriculum } from '../services/aiService';
+import { Sparkles, BookOpen, FlaskConical, Calculator, CheckCircle2, X } from 'lucide-react';
 
 interface LessonPlannerProps {
   student: Student;
@@ -44,7 +45,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <div className="bg-emerald-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-emerald-200">
         <div className="relative z-10 text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Activity Planner 📖</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight flex items-center justify-center md:justify-start gap-3">Activity Planner <BookOpen className="w-8 h-8 md:w-10 md:h-10" /></h1>
           <p className="text-emerald-100 text-sm md:text-lg max-w-2xl">Stay ahead of your studies by reviewing upcoming activities and using our AI assistant to understand your syllabus better.</p>
         </div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400/20 rounded-full -mr-32 -mt-32 blur-3xl"></div>
@@ -55,7 +56,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-200">✨</div>
+            <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200"><Sparkles className="w-6 h-6" /></div>
             <div>
               <h3 className="text-2xl font-black text-slate-800">Syllabus Explainer</h3>
               <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Powered by Gemini AI</p>
@@ -117,7 +118,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
-                        {act.subject === 'Science' ? '🧪' : act.subject === 'Math' ? '📐' : '📖'}
+                        {act.subject === 'Science' ? <FlaskConical className="w-5 h-5" /> : act.subject === 'Math' ? <Calculator className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{act.subject}</p>
@@ -139,7 +140,7 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
                         </>
                       ) : (
                         <>
-                          <span>✨</span> Explain with AI
+                          <Sparkles className="w-4 h-4" /> Explain with AI
                         </>
                       )}
                     </button>
@@ -182,13 +183,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
         <div className="space-y-8">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
             <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <span>✅</span> Recently Covered
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" /> Recently Covered
             </h3>
             <div className="space-y-4">
               {completedActivities.slice(0, 5).map(act => (
                 <div key={act.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
                   <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
-                    {act.subject === 'Science' ? '🧪' : act.subject === 'Math' ? '📐' : '📖'}
+                    {act.subject === 'Science' ? <FlaskConical className="w-5 h-5" /> : act.subject === 'Math' ? <Calculator className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
                   </div>
                   <div>
                     <p className="text-sm font-bold text-slate-800">{act.title}</p>
@@ -219,14 +220,14 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
               <div className="relative z-10 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">AI Assistant</p>
-                  <h3 className="text-xl md:text-2xl font-black">Activity Deep Dive ✨</h3>
+                  <h3 className="text-xl md:text-2xl font-black flex items-center gap-2">Activity Deep Dive <Sparkles className="w-5 h-5" /></h3>
                 </div>
                 <button 
                   onClick={() => setShowModal(false)}
                   className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
                   aria-label="Close explanation"
                 >
-                  <span className="text-2xl md:text-3xl font-black">×</span>
+                  <X className="w-6 h-6 md:w-8 md:h-8" />
                 </button>
               </div>
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>

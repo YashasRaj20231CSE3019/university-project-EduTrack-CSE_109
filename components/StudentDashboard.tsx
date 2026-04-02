@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Student, AttendanceRecord } from '../types';
 import QRGenerator from './QRGenerator';
+import { Smartphone, CalendarDays, Rocket, FlaskConical, Calculator, FileText, Trophy, Sparkles } from 'lucide-react';
 
 interface StudentDashboardProps {
   student: Student;
@@ -25,7 +26,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
       {/* Student Welcome Hero */}
       <div className="bg-indigo-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl shadow-indigo-200">
         <div className="relative z-10 max-w-lg text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight">Hi, {student.name}! ✨</h1>
+          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight flex items-center gap-3">Hi, {student.name}! <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-indigo-200" /></h1>
           <p className="text-indigo-100 text-sm md:text-lg mb-6">Your overall performance is looking great. You have {pendingAssignments.length} assignments needing attention.</p>
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center md:justify-start">
             <button 
@@ -50,7 +51,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
               onClick={() => setShowQR(true)}
               className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
             >
-              <span>📱</span> My QR Code
+              <Smartphone className="w-5 h-5" /> My QR Code
             </button>
           </div>
         </div>
@@ -69,21 +70,21 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
         {/* Quick Schedule Preview */}
         <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col">
           <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <span>📅</span> Morning Lineup
+            <CalendarDays className="w-5 h-5 text-indigo-600" /> Morning Lineup
           </h3>
           <div className="space-y-4">
              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
                 <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-xs font-black">08:00</div>
                 <div>
                    <p className="text-sm font-black text-slate-800">Mathematics</p>
-                   <p className="text-[10px] font-bold text-slate-400 uppercase">Room 302A • Prof. X</p>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase">Room 302A • Prof. Verma</p>
                 </div>
              </div>
              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
                 <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-xs font-black">09:15</div>
                 <div>
                    <p className="text-sm font-black text-slate-800">Science Lab</p>
-                   <p className="text-[10px] font-bold text-slate-400 uppercase">Lab 1 • Dr. Miller</p>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase">Lab 1 • Dr. Sharma</p>
                 </div>
              </div>
              <button 
@@ -99,7 +100,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
         <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
             <h3 className="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
-              <span>🚀</span> Priority Tasks
+              <Rocket className="w-5 h-5 text-indigo-600" /> Priority Tasks
             </h3>
             <button 
               onClick={() => navigate('/assignments')}
@@ -117,7 +118,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
               >
                 <div className="flex items-center gap-4 md:gap-6">
                   <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl bg-amber-50 text-amber-600 shrink-0">
-                    <span className="text-lg md:text-xl">{as.subject === 'Science' ? '🧪' : as.subject === 'Math' ? '📐' : '📝'}</span>
+                    {as.subject === 'Science' ? <FlaskConical className="w-5 h-5 md:w-6 md:h-6" /> : as.subject === 'Math' ? <Calculator className="w-5 h-5 md:w-6 md:h-6" /> : <FileText className="w-5 h-5 md:w-6 md:h-6" />}
                   </div>
                   <div className="min-w-0">
                     <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{as.title}</h4>
@@ -130,8 +131,9 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
               </div>
             ))}
             {pendingAssignments.length === 0 && (
-              <div className="p-10 text-center">
-                <p className="text-slate-400 font-medium italic">No pending tasks! Enjoy your free time. 🎉</p>
+              <div className="p-10 text-center flex flex-col items-center justify-center gap-3">
+                <Trophy className="w-8 h-8 text-slate-300" />
+                <p className="text-slate-400 font-medium italic">No pending tasks! Enjoy your free time.</p>
               </div>
             )}
           </div>
@@ -141,10 +143,10 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
       {/* Progress Snapshots */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Math Grade', val: 'A-', color: 'indigo', icon: '📐' },
-          { label: 'Science Grade', val: 'A', color: 'emerald', icon: '🧪' },
-          { label: 'Class Rank', val: '#12', color: 'amber', icon: '🏆' },
-          { label: 'Points', val: '1,240', color: 'rose', icon: '✨' }
+          { label: 'Math Grade', val: 'A-', color: 'indigo', icon: <Calculator className="w-4 h-4" /> },
+          { label: 'Science Grade', val: 'A', color: 'emerald', icon: <FlaskConical className="w-4 h-4" /> },
+          { label: 'Class Rank', val: '#12', color: 'amber', icon: <Trophy className="w-4 h-4" /> },
+          { label: 'Points', val: '1,240', color: 'rose', icon: <Sparkles className="w-4 h-4" /> }
         ].map((item, i) => (
           <div key={i} className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
              <div className="flex items-center gap-3 mb-2">

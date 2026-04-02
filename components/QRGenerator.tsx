@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Student } from '../types';
 import { apiService } from '../services/apiService';
+import { X, Smartphone, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 interface QRGeneratorProps {
   student: Student;
@@ -46,22 +47,22 @@ const QRGenerator: React.FC<QRGeneratorProps> = ({ student, onClose }) => {
   }, [student.id]);
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start md:items-center justify-center p-4 md:p-6 bg-slate-900/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 my-auto">
-        <div className="p-10 bg-indigo-600 text-white relative text-center">
+    <div className="fixed inset-0 z-[70] flex flex-col items-center justify-start p-4 md:p-8 bg-slate-900/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+      <div className="bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 flex flex-col my-auto">
+        <div className="p-10 bg-indigo-600 text-white relative text-center shrink-0">
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 md:top-6 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+            className="absolute top-6 right-6 md:top-8 md:right-8 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
             aria-label="Close QR code"
           >
-            <span className="text-2xl md:text-3xl font-black">×</span>
+            <X className="w-6 h-6 md:w-8 md:h-8" />
           </button>
-          <div className="w-20 h-20 bg-white/20 rounded-[2rem] flex items-center justify-center text-4xl mx-auto mb-6">📱</div>
+          <div className="w-20 h-20 bg-white/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6"><Smartphone className="w-10 h-10" /></div>
           <h3 className="text-3xl font-black mb-2">My Attendance QR</h3>
           <p className="text-sm font-medium opacity-80">Show this to your teacher to mark attendance</p>
         </div>
 
-        <div className="p-10 flex flex-col items-center gap-8">
+        <div className="p-10 flex flex-col items-center gap-8 overflow-y-auto">
           <div className="relative p-6 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100 shadow-inner">
             {isLoading && !token ? (
               <div className="w-64 h-64 flex items-center justify-center">
@@ -84,7 +85,7 @@ const QRGenerator: React.FC<QRGeneratorProps> = ({ student, onClose }) => {
               </div>
             ) : (
               <div className="w-64 h-64 flex flex-col items-center justify-center text-center p-6">
-                <span className="text-4xl mb-4">⚠️</span>
+                <AlertTriangle className="w-10 h-10 text-rose-500 mb-4" />
                 <p className="text-sm font-bold text-slate-500">{error}</p>
                 <button 
                   onClick={fetchToken}
@@ -112,7 +113,7 @@ const QRGenerator: React.FC<QRGeneratorProps> = ({ student, onClose }) => {
           </div>
 
           <div className="p-6 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-4">
-            <span className="text-xl">🛡️</span>
+            <ShieldAlert className="w-6 h-6 text-amber-600 shrink-0" />
             <div>
               <p className="text-xs font-black text-amber-800 uppercase tracking-widest mb-1">Anti-Cheat Protection</p>
               <p className="text-[10px] font-bold text-amber-700 leading-relaxed">

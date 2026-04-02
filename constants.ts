@@ -1,5 +1,5 @@
 
-import type { Student, Activity, Assignment, ScheduleEntry, AttendanceRecord } from './types.ts';
+import type { Student, Activity, Assignment, ScheduleEntry, AttendanceRecord, Notification } from './types.ts';
 
 const ASSIGNMENT_TEMPLATES = [
   { title: 'Cell Theory Essay', subject: 'Science', description: 'A 500-word essay on the origins of cell theory.' },
@@ -15,21 +15,21 @@ const ASSIGNMENT_TEMPLATES = [
 ];
 
 export const MOCK_SCHEDULE: ScheduleEntry[] = [
-  { id: 'sc-1', day: 'Mon', startTime: '08:00', endTime: '09:00', subject: 'Mathematics', room: '302A', teacher: 'Prof. X' },
-  { id: 'sc-2', day: 'Mon', startTime: '09:15', endTime: '10:15', subject: 'Science', room: 'Lab 1', teacher: 'Dr. Miller' },
-  { id: 'sc-3', day: 'Mon', startTime: '11:00', endTime: '12:00', subject: 'English', room: '101B', teacher: 'Ms. Wright' },
-  { id: 'sc-4', day: 'Tue', startTime: '08:00', endTime: '09:00', subject: 'History', room: '204', teacher: 'Mr. Brown' },
-  { id: 'sc-5', day: 'Tue', startTime: '10:00', endTime: '11:30', subject: 'Art', room: 'Studio 1', teacher: 'Ms. Palette' },
-  { id: 'sc-6', day: 'Wed', startTime: '09:00', endTime: '10:00', subject: 'Mathematics', room: '302A', teacher: 'Prof. X' },
-  { id: 'sc-7', day: 'Wed', startTime: '10:15', endTime: '11:15', subject: 'Computer Science', room: 'IT Hub', teacher: 'Mr. Gates' },
-  { id: 'sc-8', day: 'Thu', startTime: '08:00', endTime: '09:30', subject: 'Science', room: 'Lab 1', teacher: 'Dr. Miller' },
-  { id: 'sc-9', day: 'Thu', startTime: '11:00', endTime: '12:30', subject: 'Physical Ed', room: 'Main Gym', teacher: 'Coach K' },
-  { id: 'sc-10', day: 'Fri', startTime: '09:00', endTime: '10:00', subject: 'English', room: '101B', teacher: 'Ms. Wright' },
-  { id: 'sc-11', day: 'Fri', startTime: '13:00', endTime: '14:30', subject: 'Geography', room: '202', teacher: 'Ms. Map' },
+  { id: 'sc-1', day: 'Mon', startTime: '08:00', endTime: '09:00', subject: 'Mathematics', room: '302A', teacher: 'Prof. Verma' },
+  { id: 'sc-2', day: 'Mon', startTime: '09:15', endTime: '10:15', subject: 'Science', room: 'Lab 1', teacher: 'Dr. Sharma' },
+  { id: 'sc-3', day: 'Mon', startTime: '11:00', endTime: '12:00', subject: 'English', room: '101B', teacher: 'Ms. Gupta' },
+  { id: 'sc-4', day: 'Tue', startTime: '08:00', endTime: '09:00', subject: 'History', room: '204', teacher: 'Mr. Singh' },
+  { id: 'sc-5', day: 'Tue', startTime: '10:00', endTime: '11:30', subject: 'Art', room: 'Studio 1', teacher: 'Ms. Patel' },
+  { id: 'sc-6', day: 'Wed', startTime: '09:00', endTime: '10:00', subject: 'Mathematics', room: '302A', teacher: 'Prof. Verma' },
+  { id: 'sc-7', day: 'Wed', startTime: '10:15', endTime: '11:15', subject: 'Computer Science', room: 'IT Hub', teacher: 'Mr. Kumar' },
+  { id: 'sc-8', day: 'Thu', startTime: '08:00', endTime: '09:30', subject: 'Science', room: 'Lab 1', teacher: 'Dr. Sharma' },
+  { id: 'sc-9', day: 'Thu', startTime: '11:00', endTime: '12:30', subject: 'Physical Ed', room: 'Main Gym', teacher: 'Coach Rao' },
+  { id: 'sc-10', day: 'Fri', startTime: '09:00', endTime: '10:00', subject: 'English', room: '101B', teacher: 'Ms. Gupta' },
+  { id: 'sc-11', day: 'Fri', startTime: '13:00', endTime: '14:30', subject: 'Geography', room: '202', teacher: 'Ms. Desai' },
 ];
 
-const firstNames = ["James", "Mary", "Robert", "Patricia", "John", "Jennifer", "Michael", "Linda", "David", "Elizabeth", "William", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle", "Kenneth", "Dorothy", "Kevin", "Carol", "Brian", "Amanda", "George", "Melissa", "Edward", "Deborah", "Ronald", "Stephanie", "Jason", "Rebecca", "Gary", "Sharon", "Timothy", "Laura", "Jeffrey", "Cynthia", "Ryan", "Kathleen", "Jacob", "Amy", "Gary", "Shirley", "Nicholas", "Angela", "Eric", "Helen", "Stephen", "Anna", "Jonathan", "Brenda", "Larry", "Pamela", "Justin", "Nicole", "Scott", "Emma", "Brandon", "Samantha", "Frank", "Katherine", "Benjamin", "Christine", "Gregory", "Debra", "Samuel", "Rachel", "Raymond", "Catherine", "Patrick", "Carolyn", "Alexander", "Janet", "Jack", "Ruth", "Dennis", "Maria", "Jerry", "Heather"];
-const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts", "Gomez", "Phillips", "Evans", "Turner", "Diaz", "Parker", "Cruz", "Edwards", "Collins", "Reyes", "Stewart", "Morris", "Morales", "Murphy", "Cook", "Rogers", "Gutierrez", "Ortiz", "Morgan", "Cooper", "Peterson", "Bailey", "Reed", "Kelly", "Howard", "Ramos", "Kim", "Cox", "Ward", "Richardson", "Watson", "Brooks", "Chavez", "Wood", "James", "Bennett", "Gray", "Mendoza", "Ruiz", "Hughes", "Price", "Alvarez", "Castillo", "Sanders", "Patel", "Myers", "Long", "Ross", "Foster", "Jimenez"];
+const firstNames = ["Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Ayaan", "Krishna", "Ishaan", "Shaurya", "Atharv", "Advik", "Pranav", "Kabir", "Ritvik", "Aryan", "Dhruv", "Rudra", "Ojas", "Ananya", "Myra", "Saanvi", "Diya", "Pari", "Aaradhya", "Anika", "Navya", "Avni", "Isha", "Riya", "Aadhya", "Kavya", "Kiara", "Prisha", "Roshni", "Neha", "Pooja", "Sneha", "Kriti", "Rahul", "Rohit", "Amit", "Sumit", "Sanjay", "Rajesh", "Ramesh", "Suresh", "Mahesh", "Dinesh", "Karan", "Varun", "Tarun", "Arun", "Ravi", "Priya", "Kiran", "Megha", "Shikha", "Swati", "Nidhi", "Divya", "Shilpa", "Rekha", "Geeta", "Seema", "Sunita", "Anita", "Kavita", "Savita", "Ritu", "Nisha", "Asha", "Usha", "Lata", "Maya", "Tara", "Mira", "Gauri", "Radha", "Meera", "Sita", "Gita", "Rani", "Mona", "Sona", "Tina", "Mina", "Rina", "Bina", "Hina", "Zoya", "Zara", "Sana", "Saba", "Nida", "Huda", "Fiza", "Rida", "Safa", "Marwa"];
+const lastNames = ["Sharma", "Verma", "Gupta", "Malhotra", "Singh", "Kapoor", "Kumar", "Das", "Bose", "Sen", "Nair", "Menon", "Pillai", "Reddy", "Rao", "Naidu", "Gowda", "Patil", "Deshmukh", "Joshi", "Kulkarni", "Deshpande", "Bhatt", "Trivedi", "Vyas", "Mishra", "Pandey", "Shukla", "Tiwari", "Dubey", "Yadav", "Chauhan", "Rajput", "Thakur", "Rathore", "Shekhawat", "Choudhary", "Jat", "Gurjar", "Meena", "Bhil", "Gond", "Santhal", "Munda", "Oraon", "Ho", "Kharia", "Bhumij", "Mahato", "Kurmi", "Koiri", "Teli", "Sahu", "Bania", "Agarwal", "Garg", "Bansal", "Goyal", "Jain", "Shah", "Mehta", "Desai", "Patel", "Amin", "Modi", "Gandhi", "Ambani", "Adani", "Tata", "Birla", "Hinduja", "Godrej", "Bajaj", "Mahindra", "TVS", "Murthy", "Premji", "Nadella", "Pichai", "Nooyi", "Banga", "Kurien", "Swaminathan", "Kalam", "Raman", "Bose", "Ramanujan", "Chandrasekhar", "Khurana", "Sen", "Bhagwati", "Rajan", "Basu", "Banerjee", "Chatterjee", "Mukherjee", "Bhattacharya", "Ganguly", "Goswami"];
 const classGroups = ["9A", "9B", "10A", "10B", "11A", "12A"];
 
 const BEHAVIOR_LOGS = [
@@ -46,8 +46,8 @@ const BEHAVIOR_LOGS = [
 const generateStudents = (count: number): Student[] => {
   const students: Student[] = [];
   for (let i = 1; i <= count; i++) {
-    const fName = firstNames[i % firstNames.length];
-    const lName = lastNames[i % lastNames.length];
+    const fName = firstNames[(i - 1) % firstNames.length];
+    const lName = lastNames[(i - 1) % lastNames.length];
     const name = `${fName} ${lName}`;
     const email = `${fName.toLowerCase()}.${lName.toLowerCase()}${i}@school.edu`;
     const grade = classGroups[Math.floor(Math.random() * classGroups.length)];
@@ -86,7 +86,7 @@ const generateStudents = (count: number): Student[] => {
     const parentContact = {
       name: `${parentFName} ${lName}`,
       relation: Math.random() > 0.5 ? 'Mother' : 'Father',
-      phone: `(555) ${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
+      phone: `+91 ${Math.floor(60000 + Math.random() * 39999)} ${Math.floor(10000 + Math.random() * 89999)}`,
       email: `${parentFName.toLowerCase()}.${lName.toLowerCase()}@gmail.com`
     };
 
@@ -166,14 +166,15 @@ export const INITIAL_ACTIVITIES: Activity[] = [
   }
 ];
 
-export const INITIAL_NOTIFICATIONS = [
+export const INITIAL_NOTIFICATIONS: Notification[] = [
   {
     id: 'not-1',
     title: 'New Assignment',
     message: 'A new assignment "Cell Theory Essay" has been posted.',
     time: '2 hours ago',
     read: false,
-    type: 'info'
+    type: 'info',
+    link: '/assignments'
   },
   {
     id: 'not-2',
@@ -181,7 +182,8 @@ export const INITIAL_NOTIFICATIONS = [
     message: 'Class 9A attendance is below average today.',
     time: '4 hours ago',
     read: false,
-    type: 'warning'
+    type: 'warning',
+    link: '/attendance'
   },
   {
     id: 'not-3',
@@ -189,6 +191,7 @@ export const INITIAL_NOTIFICATIONS = [
     message: 'EduTrack has been updated with new AI features.',
     time: '1 day ago',
     read: true,
-    type: 'success'
+    type: 'success',
+    link: '/'
   }
 ];

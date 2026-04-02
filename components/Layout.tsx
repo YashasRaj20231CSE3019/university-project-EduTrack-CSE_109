@@ -1,8 +1,31 @@
 
 import React, { useState } from 'react';
-import { NavLink, useLocation, Link } from 'react-router-dom';
+import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { User, Notification } from '../types';
+import { 
+  LayoutDashboard, 
+  ClipboardCheck, 
+  Users, 
+  Wand2, 
+  CalendarDays, 
+  Megaphone, 
+  UsersRound, 
+  Home, 
+  BookOpen, 
+  Library, 
+  TrendingUp,
+  LogOut,
+  Menu,
+  Search,
+  Bell,
+  Info,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Inbox,
+  X
+} from 'lucide-react';
 
 interface LayoutProps {
   user: User;
@@ -24,25 +47,26 @@ const Layout: React.FC<LayoutProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const teacherNavItems = [
-    { id: '/', label: 'Overview', icon: '📊' },
-    { id: '/attendance', label: 'Attendance', icon: '📝' },
-    { id: '/students', label: 'Students', icon: '👥' },
-    { id: '/planner', label: 'Lesson Planner', icon: '🪄' },
-    { id: '/schedule', label: 'Class Schedule', icon: '📅' },
-    { id: '/announcements', label: 'Announcements', icon: '📢' },
-    { id: '/parents', label: 'Parent Portal', icon: '👨‍👩‍👧‍👦' },
+    { id: '/', label: 'Overview', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: '/attendance', label: 'Attendance', icon: <ClipboardCheck className="w-5 h-5" /> },
+    { id: '/students', label: 'Students', icon: <Users className="w-5 h-5" /> },
+    { id: '/planner', label: 'Lesson Planner', icon: <Wand2 className="w-5 h-5" /> },
+    { id: '/schedule', label: 'Class Schedule', icon: <CalendarDays className="w-5 h-5" /> },
+    { id: '/announcements', label: 'Announcements', icon: <Megaphone className="w-5 h-5" /> },
+    { id: '/parents', label: 'Parent Portal', icon: <UsersRound className="w-5 h-5" /> },
   ];
 
   const studentNavItems = [
-    { id: '/', label: 'My Dashboard', icon: '🏠' },
-    { id: '/lesson-planner', label: 'Activity Planner', icon: '📖' },
-    { id: '/schedule', label: 'My Timetable', icon: '📅' },
-    { id: '/assignments', label: 'Assignments', icon: '📚' },
-    { id: '/my-progress', label: 'Grades & Progress', icon: '📈' },
-    { id: '/announcements', label: 'Announcements', icon: '📢' },
+    { id: '/', label: 'My Dashboard', icon: <Home className="w-5 h-5" /> },
+    { id: '/lesson-planner', label: 'Activity Planner', icon: <BookOpen className="w-5 h-5" /> },
+    { id: '/schedule', label: 'My Timetable', icon: <CalendarDays className="w-5 h-5" /> },
+    { id: '/assignments', label: 'Assignments', icon: <Library className="w-5 h-5" /> },
+    { id: '/my-progress', label: 'Grades & Progress', icon: <TrendingUp className="w-5 h-5" /> },
+    { id: '/announcements', label: 'Announcements', icon: <Megaphone className="w-5 h-5" /> },
   ];
 
   const navItems = user.role === 'teacher' ? teacherNavItems : studentNavItems;
@@ -86,7 +110,7 @@ const Layout: React.FC<LayoutProps> = ({
             onClick={() => setIsSidebarOpen(false)}
             className="lg:hidden p-2 text-slate-400 hover:text-slate-600"
           >
-            ✕
+            <X className="w-5 h-5" />
           </button>
         </div>
         
@@ -136,7 +160,7 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={onLogout}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
             >
-              <span className="text-lg">🚪</span>
+              <LogOut className="w-5 h-5" />
               Logout
             </button>
           </div>
@@ -166,7 +190,7 @@ const Layout: React.FC<LayoutProps> = ({
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
-              <span className="text-2xl">☰</span>
+              <Menu className="w-6 h-6" />
             </button>
             <div className="flex flex-col">
               <h2 className="text-lg md:text-2xl font-bold text-slate-800 capitalize leading-none mb-1 truncate max-w-[150px] md:max-w-none">
@@ -180,7 +204,7 @@ const Layout: React.FC<LayoutProps> = ({
           
           <div className="flex items-center gap-6">
             <div className="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
-              <span className="text-slate-400 mr-2 text-sm">🔍</span>
+              <Search className="w-4 h-4 text-slate-400 mr-2" />
               <input type="text" placeholder="Global search..." className="bg-transparent border-none outline-none text-sm w-48 text-slate-600" />
             </div>
             
@@ -191,7 +215,7 @@ const Layout: React.FC<LayoutProps> = ({
                   showNotifications ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'
                 }`}
               >
-                <span className="text-xl">🔔</span>
+                <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
                   <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
                 )}
@@ -223,6 +247,10 @@ const Layout: React.FC<LayoutProps> = ({
                             key={notif.id} 
                             onClick={() => {
                               onMarkAsRead(notif.id);
+                              setShowNotifications(false);
+                              if (notif.link) {
+                                navigate(notif.link);
+                              }
                             }}
                             className={`p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors relative ${!notif.read ? 'bg-indigo-50' : 'bg-white'}`}
                             style={{ backgroundColor: !notif.read ? '#f5f7ff' : '#ffffff' }}
@@ -231,9 +259,12 @@ const Layout: React.FC<LayoutProps> = ({
                               <div className="absolute top-4 right-4 w-2 h-2 bg-indigo-600 rounded-full"></div>
                             )}
                             <div className="flex gap-3">
-                              <span className="text-xl">
-                                {notif.type === 'info' ? 'ℹ️' : notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : '❌'}
-                              </span>
+                              <div className="shrink-0 mt-0.5">
+                                {notif.type === 'info' ? <Info className="w-5 h-5 text-indigo-500" /> : 
+                                 notif.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : 
+                                 notif.type === 'warning' ? <AlertTriangle className="w-5 h-5 text-amber-500" /> : 
+                                 <XCircle className="w-5 h-5 text-rose-500" />}
+                              </div>
                               <div className="flex-1">
                                 <p className="text-sm font-bold text-slate-800">{notif.title}</p>
                                 <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{notif.message}</p>
@@ -244,7 +275,7 @@ const Layout: React.FC<LayoutProps> = ({
                         ))
                       ) : (
                         <div className="p-10 text-center bg-white" style={{ backgroundColor: '#ffffff' }}>
-                          <span className="text-4xl block mb-3">📭</span>
+                          <Inbox className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                           <p className="text-sm font-bold text-slate-800">All caught up!</p>
                           <p className="text-xs text-slate-400 mt-1">No new notifications for you.</p>
                         </div>

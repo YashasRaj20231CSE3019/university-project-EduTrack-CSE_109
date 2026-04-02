@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Role, User } from '../types';
 import { apiService } from '../services/apiService';
 import { motion } from 'motion/react';
+import { GraduationCap, Backpack, AlertTriangle, ArrowRight, Bot, Smartphone, MessageSquare, BarChart3 } from 'lucide-react';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -43,7 +44,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row font-['Inter'] overflow-x-hidden">
       {/* Brand Section - Secondary on mobile, Primary on desktop */}
-      <div className="order-2 lg:order-1 lg:w-1/2 bg-indigo-600 p-8 lg:p-16 flex flex-col justify-between relative overflow-hidden shrink-0">
+      <div className="hidden lg:flex lg:w-1/2 bg-indigo-600 p-8 lg:p-16 flex-col justify-between relative overflow-hidden shrink-0">
         {/* Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute -top-24 -left-24 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -74,10 +75,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
               {[
-                { icon: '🤖', title: 'AI Lesson Planner', desc: 'Generate objectives in seconds' },
-                { icon: '📱', title: 'QR Attendance', desc: 'Secure touchless check-in' },
-                { icon: '💬', title: 'Real-time Chat', desc: 'Instant teacher-student sync' },
-                { icon: '📊', title: 'Smart Analytics', desc: 'Track academic progress' },
+                { icon: <Bot className="w-6 h-6 text-indigo-200" />, title: 'AI Lesson Planner', desc: 'Generate objectives in seconds' },
+                { icon: <Smartphone className="w-6 h-6 text-indigo-200" />, title: 'QR Attendance', desc: 'Secure touchless check-in' },
+                { icon: <MessageSquare className="w-6 h-6 text-indigo-200" />, title: 'Real-time Chat', desc: 'Instant teacher-student sync' },
+                { icon: <BarChart3 className="w-6 h-6 text-indigo-200" />, title: 'Smart Analytics', desc: 'Track academic progress' },
               ].map((feature, i) => (
                 <motion.div 
                   key={i}
@@ -86,7 +87,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   transition={{ delay: 0.4 + (i * 0.1) }}
                   className="bg-white/10 backdrop-blur-sm border border-white/10 p-4 rounded-2xl flex items-start gap-4"
                 >
-                  <div className="text-2xl mt-1">{feature.icon}</div>
+                  <div className="mt-1">{feature.icon}</div>
                   <div>
                     <h3 className="text-white font-bold text-xs lg:text-sm uppercase tracking-wider">{feature.title}</h3>
                     <p className="text-indigo-200 text-[10px] lg:text-xs leading-tight mt-1">{feature.desc}</p>
@@ -108,7 +109,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       </div>
 
       {/* Login Form Section - Primary on mobile */}
-      <div className="order-1 lg:order-2 flex-1 bg-slate-50 flex flex-col items-center justify-center p-6 lg:p-16 min-h-screen">
+      <div className="flex-1 bg-slate-50 flex flex-col items-center justify-center p-6 lg:p-16 min-h-screen">
         {/* Mobile Header - More compact */}
         <div className="lg:hidden flex items-center gap-2 mb-8">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-lg shadow-lg shadow-indigo-100">
@@ -140,7 +141,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'
                   }`}
                 >
-                  <span className="text-lg">👨‍🏫</span>
+                  <GraduationCap className="w-5 h-5" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Teacher</span>
                 </button>
                 <button
@@ -152,7 +153,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'
                   }`}
                 >
-                  <span className="text-lg">🎒</span>
+                  <Backpack className="w-5 h-5" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Student</span>
                 </button>
               </div>
@@ -163,7 +164,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">School Email</label>
                 <input
                   type="email"
-                  placeholder={selectedRole === 'teacher' ? 'miller@school.edu' : 'student@school.edu'}
+                  placeholder={selectedRole === 'teacher' ? 'sharma@school.edu' : 'aarav.sharma1@school.edu'}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -189,7 +190,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 animate={{ opacity: 1, y: 0 }}
                 className="p-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-3"
               >
-                <span className="text-lg">⚠️</span> {error}
+                <AlertTriangle className="w-5 h-5" /> {error}
               </motion.div>
             )}
 
@@ -203,7 +204,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               ) : (
                 <>
                   Sign In to EduTrack
-                  <span className="text-lg">→</span>
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </button>
@@ -213,8 +214,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 Demo Accounts
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
-                <span className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold">miller@school.edu</span>
-                <span className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold">yashas@school.edu</span>
+                <span className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold">sharma@school.edu</span>
+                <span className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold">aarav.sharma1@school.edu</span>
               </div>
             </div>
           </form>

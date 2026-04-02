@@ -32,49 +32,74 @@ EduTrack is a comprehensive, full-stack education management platform designed t
 
 ## 💻 Local Setup & Installation
 
-Follow these steps to get EduTrack running on your local machine.
+Follow these steps to get EduTrack running on your local machine. The setup process is identical for both macOS and Windows.
 
 ### 📋 Prerequisites
 - **Node.js:** version 18.0.0 or higher ([Download here](https://nodejs.org/))
 - **npm:** usually comes bundled with Node.js.
+- **Git:** for cloning the repository ([Download here](https://git-scm.com/))
 
 ### 1. Clone the Repository
-Open your terminal (Mac) or Command Prompt/PowerShell (Windows):
+Open your terminal (macOS/Linux) or Command Prompt/PowerShell (Windows):
 ```bash
 git clone <your-repo-url>
 cd edutrack
 ```
 
 ### 2. Install Dependencies
+Install all required npm packages for both the frontend and backend:
 ```bash
 npm install
 ```
 
 ### 3. Environment Configuration
-Create a file named `.env` in the root directory and add the following:
+Create a file named `.env` in the root directory of the project. You will need to add your Google Gemini API key and a secret string for JWT authentication.
+
 ```env
+# Your Google Gemini API Key (Get one at https://aistudio.google.com/)
 GEMINI_API_KEY=your_google_gemini_api_key
+
+# A secure random string for signing JWT tokens (e.g., "my_super_secret_key_123")
 JWT_SECRET=a_secure_random_string_for_tokens
 ```
-*Note: You can get a Gemini API key for free at [aistudio.google.com](https://aistudio.google.com/).*
 
 ### 4. Running the Application
 
+The application uses a single command to start both the Vite frontend and the Express backend concurrently.
+
 #### **🍎 macOS / Linux**
-1. Open Terminal.
-2. Run the development server:
+1. Open your Terminal application.
+2. Navigate to the project directory if you haven't already.
+3. Run the development server:
    ```bash
    npm run dev
    ```
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Open [http://localhost:3000](http://localhost:3000) in your web browser.
 
 #### **🪟 Windows**
 1. Open **PowerShell** or **Command Prompt**.
-2. Run the development server:
+2. Navigate to the project directory if you haven't already.
+3. Run the development server:
    ```bash
    npm run dev
    ```
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Open [http://localhost:3000](http://localhost:3000) in your web browser.
+
+*Note: If you encounter any permission issues on Windows, try running PowerShell or Command Prompt as Administrator.*
+
+---
+
+## 🔑 Demo Accounts
+
+To test the application, you can use the demo accounts provided in the `CREDENTIALS.md` or `credentials.csv` file. 
+
+**Teacher Example:**
+- Email: `sharma@school.edu`
+- Password: (any password will work in demo mode)
+
+**Student Example:**
+- Email: `aarav.sharma1@school.edu`
+- Password: (any password will work in demo mode)
 
 ---
 
@@ -86,7 +111,7 @@ JWT_SECRET=a_secure_random_string_for_tokens
 - **`server.ts`**: Express & Socket.io server implementation.
 - **`db.ts`**: SQLite database schema and seeding logic.
 - **`types.ts`**: Global TypeScript definitions.
-- **`credentials.csv`**: List of test accounts for students and teachers.
+- **`constants.ts`**: Mock data generation and constants.
 
 ## 🛡️ Security & Reliability
 - **JWT Authentication:** Secure session management and QR code validation.

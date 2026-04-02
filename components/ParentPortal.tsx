@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ParentMessage } from '../types';
 import { apiService } from '../services/apiService';
+import { Download, Search, Phone, Mail, Mailbox, X } from 'lucide-react';
 
 const ParentPortal: React.FC = () => {
   const [contacts, setContacts] = useState<ParentMessage[]>([]);
@@ -78,7 +79,7 @@ const ParentPortal: React.FC = () => {
             onClick={exportCSV}
             className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center gap-2"
           >
-            <span>📥</span> Export CSV
+            <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
       </div>
@@ -91,7 +92,7 @@ const ParentPortal: React.FC = () => {
 
       <div className="bg-white p-4 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm">
         <div className="mb-6 relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search by student or parent name..."
@@ -138,10 +139,10 @@ const ParentPortal: React.FC = () => {
                     <td className="py-4 px-4">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <span>📞</span> {contact.parentPhone || 'No phone'}
+                          <Phone className="w-4 h-4" /> {contact.parentPhone || 'No phone'}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <span>✉️</span> {contact.parentEmail || 'No email'}
+                          <Mail className="w-4 h-4" /> {contact.parentEmail || 'No email'}
                         </div>
                       </div>
                     </td>
@@ -165,7 +166,7 @@ const ParentPortal: React.FC = () => {
             
             {filteredContacts.length === 0 && (
               <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl mt-4">
-                <span className="text-4xl mb-3 block">📭</span>
+                <div className="flex justify-center mb-3"><Mailbox className="w-10 h-10 text-slate-400" /></div>
                 <p className="text-slate-500 font-medium">No contacts found matching your search.</p>
               </div>
             )}
@@ -183,7 +184,7 @@ const ParentPortal: React.FC = () => {
                 onClick={() => setEditingContact(null)}
                 className="text-slate-400 hover:text-slate-600"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
             

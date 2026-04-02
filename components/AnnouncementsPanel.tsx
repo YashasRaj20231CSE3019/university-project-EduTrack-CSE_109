@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Announcement, Role } from '../types';
 import { apiService } from '../services/apiService';
+import { Mailbox, Trash2, AlertOctagon, Pin, Info } from 'lucide-react';
 
 interface AnnouncementsPanelProps {
   userRole: Role;
@@ -10,6 +12,7 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
 
   // Form state
   const [title, setTitle] = useState('');
@@ -21,6 +24,22 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
   useEffect(() => {
     fetchAnnouncements();
   }, []);
+
+  useEffect(() => {
+    if (announcements.length > 0 && location.hash) {
+      const id = location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-4', 'ring-indigo-500', 'ring-opacity-50');
+          setTimeout(() => {
+            element.classList.remove('ring-4', 'ring-indigo-500', 'ring-opacity-50');
+          }, 2000);
+        }, 100);
+      }
+    }
+  }, [announcements, location.hash]);
 
   const fetchAnnouncements = async () => {
     try {
@@ -174,25 +193,25 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
           </div>
         ) : announcements.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 border-dashed">
-            <span className="text-4xl mb-3 block">📭</span>
+            <div className="flex justify-center mb-3"><Mailbox className="w-10 h-10 text-slate-400" /></div>
             <p className="text-slate-500 font-medium">No announcements yet</p>
           </div>
         ) : (
           announcements.map((announcement) => (
-            <div key={announcement.id} className="bg-white p-4 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 relative group">
+            <div key={announcement.id} id={announcement.id} className="bg-white p-4 md:p-8 rounded-[2rem] shadow-sm border border-slate-200 relative group transition-all duration-500">
               {userRole === 'teacher' && (
                 <button
                   onClick={() => handleDelete(announcement.id)}
                   className="absolute top-4 right-4 text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Delete announcement"
                 >
-                  🗑️
+                  <Trash2 className="w-5 h-5" />
                 </button>
               )}
               
               <div className="flex items-start gap-4">
-                <div className="text-3xl mt-1">
-                  {announcement.priority === 'urgent' ? '🚨' : announcement.priority === 'high' ? '📌' : 'ℹ️'}
+                <div className="mt-1">
+                  {announcement.priority === 'urgent' ? <AlertOctagon className="w-8 h-8 text-rose-500" /> : announcement.priority === 'high' ? <Pin className="w-8 h-8 text-amber-500" /> : <Info className="w-8 h-8 text-indigo-500" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">

@@ -131,9 +131,10 @@ app.get("/api/health", (req, res) => {
 
 app.post("/api/auth/login", (req, res) => {
   const { email, role } = req.body;
+  const normalizedEmail = email.toLowerCase().trim();
   
   if (role === 'teacher') {
-    const teacher = db.prepare('SELECT * FROM teachers WHERE email = ?').get(email) as any;
+    const teacher = db.prepare('SELECT * FROM teachers WHERE email = ?').get(normalizedEmail) as any;
     if (teacher) {
       const user = { id: teacher.id, role: 'teacher', name: teacher.name, avatar: teacher.avatar };
       const token = jwt.sign(user, JWT_SECRET as string, { expiresIn: '8h' });
@@ -141,7 +142,7 @@ app.post("/api/auth/login", (req, res) => {
     }
     return res.status(401).json({ message: 'Invalid teacher credentials' });
   } else if (role === 'student') {
-    const student = db.prepare('SELECT * FROM students WHERE email = ?').get(email) as any;
+    const student = db.prepare('SELECT * FROM students WHERE email = ?').get(normalizedEmail) as any;
     if (student) {
       const user = { id: student.id, role: 'student', name: student.name };
       const token = jwt.sign(user, JWT_SECRET as string, { expiresIn: '8h' });

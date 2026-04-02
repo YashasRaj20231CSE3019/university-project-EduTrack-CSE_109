@@ -3,15 +3,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import { ChatUser, ChatMessage } from '../types';
 import { apiService } from '../services/apiService';
+import { MessageSquare, X, MessageCircle } from 'lucide-react';
 
 interface ChatSectionProps {
   currentUserId: string;
   onlineUserIds: string[];
   socket: Socket | null;
-  onClose: () => void;
+  onClose?: () => void;
+  initialSelectedUserId?: string;
+  fullHeight?: boolean;
 }
 
-const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds, socket, onClose }) => {
+const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds, socket, onClose, initialSelectedUserId, fullHeight = false }) => {
   const [activeTab, setActiveTab] = useState<'students' | 'teachers'>('students');
   const [students, setStudents] = useState<ChatUser[]>([]);
   const [teachers, setTeachers] = useState<ChatUser[]>([]);
@@ -23,6 +26,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastInitialIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -44,6 +48,19 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
     };
     fetchUsers();
   }, [currentUserId]);
+
+  useEffect(() => {
+    if (initialSelectedUserId && (students.length > 0 || teachers.length > 0)) {
+      if (lastInitialIdRef.current !== initialSelectedUserId) {
+        const user = [...students, ...teachers].find(u => String(u.id) === String(initialSelectedUserId));
+        if (user) {
+          setSelectedUser(user);
+          setActiveTab(students.some(s => s.id === user.id) ? 'students' : 'teachers');
+          lastInitialIdRef.current = initialSelectedUserId;
+        }
+      }
+    }
+  }, [initialSelectedUserId, students, teachers]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -178,17 +195,19 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
   }
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[600px] animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className={`bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col ${fullHeight ? 'h-full' : 'h-[600px]'} animate-in fade-in slide-in-from-bottom-4 duration-300`}>
       <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
         <h4 className="font-black text-slate-800 uppercase text-[10px] md:text-xs tracking-widest flex items-center gap-2">
-          <span>💬</span> Private Messages
+          <MessageSquare className="w-4 h-4" /> Private Messages
         </h4>
-        <button 
-          onClick={onClose}
-          className="text-slate-400 hover:text-slate-600 transition-colors"
-        >
-          <span className="text-2xl">×</span>
-        </button>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -360,7 +379,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-              <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center text-3xl mb-4">👋</div>
+              <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-4"><MessageCircle className="w-10 h-10 text-indigo-300" /></div>
               <h5 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-2">Select a Contact</h5>
               <p className="text-xs text-slate-400 font-medium max-w-xs">Choose a student or teacher from the list to start a private conversation.</p>
             </div>

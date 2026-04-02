@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Student } from '../types';
+import { Search } from 'lucide-react';
 
 interface StudentDirectoryProps {
   students: Student[];
@@ -36,7 +37,7 @@ const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students }) => {
         
         <div className="flex flex-col md:flex-row gap-4 flex-1 max-w-2xl lg:justify-end">
           <div className="flex-1 relative group">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-indigo-600">🔍</span>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-colors group-focus-within:text-indigo-600" />
             <input
               type="text"
               placeholder="Search students..."
@@ -102,7 +103,7 @@ const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students }) => {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-          <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">🔍</div>
+          <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6 shadow-inner"><Search className="w-10 h-10 text-slate-400" /></div>
           <h4 className="text-2xl font-black text-slate-800 mb-2">No students found</h4>
           <p className="text-slate-500 font-medium max-w-xs text-center">Try adjusting your search criteria or enroll a new student to your database.</p>
           <button 

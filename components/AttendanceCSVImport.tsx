@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { apiService } from '../services/apiService';
+import { FileText, AlertTriangle, CheckCircle2, Upload, FolderUp } from 'lucide-react';
 
 interface AttendanceCSVImportProps {
   onImportSuccess: () => void;
@@ -83,7 +84,7 @@ const AttendanceCSVImport: React.FC<AttendanceCSVImportProps> = ({ onImportSucce
           onClick={downloadTemplate}
           className="text-xs font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wider flex items-center gap-1"
         >
-          <span>📄</span> Download Template
+          <FileText className="w-4 h-4" /> Download Template
         </button>
       </div>
       
@@ -104,7 +105,7 @@ const AttendanceCSVImport: React.FC<AttendanceCSVImportProps> = ({ onImportSucce
           onChange={handleFileChange}
         />
         
-        <div className="text-4xl mb-3">📁</div>
+        <div className="flex justify-center mb-3"><FolderUp className="w-10 h-10 text-slate-400" /></div>
         <p className="text-sm font-bold text-slate-700 mb-1">
           {file ? file.name : 'Drag & drop your CSV file here'}
         </p>
@@ -115,14 +116,14 @@ const AttendanceCSVImport: React.FC<AttendanceCSVImportProps> = ({ onImportSucce
 
       {error && (
         <div className="mt-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-sm font-medium flex items-center gap-2">
-          <span>⚠️</span> {error}
+          <AlertTriangle className="w-4 h-4" /> {error}
         </div>
       )}
 
       {result && (
         <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
           <div className="flex items-center gap-2 text-emerald-700 font-bold mb-2">
-            <span>✅</span> Import Successful
+            <CheckCircle2 className="w-4 h-4" /> Import Successful
           </div>
           <ul className="text-sm text-emerald-600 space-y-1 ml-6 list-disc">
             <li>Processed {result.datesProcessed} unique dates</li>
@@ -143,7 +144,7 @@ const AttendanceCSVImport: React.FC<AttendanceCSVImportProps> = ({ onImportSucce
           {isUploading ? (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           ) : (
-            <span>⬆️</span>
+            <Upload className="w-4 h-4" />
           )}
           {isUploading ? 'Importing...' : 'Upload & Import'}
         </button>

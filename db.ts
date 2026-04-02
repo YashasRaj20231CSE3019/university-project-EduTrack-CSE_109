@@ -120,11 +120,24 @@ export function initDb() {
     console.log('🌱 Seeding teachers...');
     const insertTeacher = db.prepare('INSERT INTO teachers (id, name, email, avatar) VALUES (?, ?, ?, ?)');
     db.transaction(() => {
-      insertTeacher.run('teacher-1', 'Dr. Miller', 'miller@school.edu', 'https://picsum.photos/seed/teacher1/200/200');
-      insertTeacher.run('teacher-2', 'Prof. X', 'profx@school.edu', 'https://picsum.photos/seed/teacher2/200/200');
-      insertTeacher.run('teacher-3', 'Ms. Wright', 'wright@school.edu', 'https://picsum.photos/seed/teacher3/200/200');
+      insertTeacher.run('teacher-1', 'Dr. Sharma', 'sharma@school.edu', 'https://picsum.photos/seed/teacher1/200/200');
+      insertTeacher.run('teacher-2', 'Prof. Verma', 'verma@school.edu', 'https://picsum.photos/seed/teacher2/200/200');
+      insertTeacher.run('teacher-3', 'Ms. Gupta', 'gupta@school.edu', 'https://picsum.photos/seed/teacher3/200/200');
+      insertTeacher.run('teacher-4', 'Admin Teacher', 'yashasrajvideos@gmail.com', 'https://picsum.photos/seed/teacher4/200/200');
     })();
     console.log('✅ Teachers seeded.');
+  }
+
+  // Ensure admin teacher exists
+  try {
+    const adminTeacher = db.prepare('SELECT * FROM teachers WHERE email = ?').get('yashasrajvideos@gmail.com');
+    if (!adminTeacher) {
+      db.prepare('INSERT INTO teachers (id, name, email, avatar) VALUES (?, ?, ?, ?)').run(
+        'teacher-4', 'Admin Teacher', 'yashasrajvideos@gmail.com', 'https://picsum.photos/seed/teacher4/200/200'
+      );
+    }
+  } catch (e) {
+    console.error('Failed to ensure admin teacher:', e);
   }
 
   // Seed data if empty

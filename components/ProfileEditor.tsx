@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Student } from '../types';
 import { apiService } from '../services/apiService';
+import { Settings, X } from 'lucide-react';
 
 interface ProfileEditorProps {
   student: Student;
@@ -35,13 +36,13 @@ const ProfileEditor: React.FC<ProfileEditorProps> = ({ student, onUpdate, onCanc
     <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
       <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
         <h4 className="font-black text-slate-800 uppercase text-[10px] md:text-xs tracking-widest flex items-center gap-2">
-          <span>⚙️</span> Edit Profile
+          <Settings className="w-4 h-4" /> Edit Profile
         </h4>
         <button 
           onClick={onCancel}
           className="text-slate-400 hover:text-slate-600 transition-colors"
         >
-          <span className="text-2xl">×</span>
+          <X className="w-6 h-6" />
         </button>
       </div>
       

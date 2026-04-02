@@ -4,6 +4,7 @@ import { Student, AttendanceRecord, User } from '../types';
 import QRScanner from './QRScanner';
 import { exportToCSV } from '../src/utils/csvExport';
 import AttendanceCSVImport from './AttendanceCSVImport';
+import { Download, Scan, Zap, Search, Check, Circle } from 'lucide-react';
 
 interface AttendanceSheetProps {
   students: Student[];
@@ -195,14 +196,14 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
             onClick={handleExportCSV}
             className="px-6 py-3 bg-white border border-slate-200 text-slate-700 text-sm font-black rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
           >
-            <span>📥</span> EXPORT CSV
+            <Download className="w-4 h-4" /> EXPORT CSV
           </button>
 
           <button 
             onClick={() => setShowScanner(true)}
             className="px-6 py-3 bg-emerald-600 text-white text-sm font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-100"
           >
-            <span>📷</span> SCAN QR
+            <Scan className="w-4 h-4" /> SCAN QR
           </button>
 
           {!isLiveSession ? (
@@ -210,7 +211,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
               onClick={() => setIsLiveSession(true)}
               className="px-6 py-3 bg-slate-900 text-white text-sm font-black rounded-xl hover:bg-slate-800 transition-all flex items-center gap-2 shadow-lg shadow-slate-100"
             >
-              <span>⚡</span> START LIVE SESSION
+              <Zap className="w-4 h-4" /> START LIVE SESSION
             </button>
           ) : (
             <div className="bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
@@ -288,7 +289,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
             <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:flex-1">
                 <div className="relative w-full max-w-md">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input 
                     type="text" 
                     placeholder="Search students..." 
@@ -339,7 +340,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
                             ? 'bg-emerald-600 border-emerald-600 text-white' 
                             : 'border-slate-200 bg-white group-hover:border-indigo-400'
                         }`}>
-                          {isPresent ? <span className="text-sm font-bold">✓</span> : <span className="text-xs text-slate-300">○</span>}
+                          {isPresent ? <Check className="w-4 h-4" /> : <Circle className="w-3 h-3 text-slate-300" />}
                         </div>
                       </td>
                       <td className="px-4 md:px-6 py-5">
@@ -382,7 +383,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
               {checkInLog.length > 0 ? (
                 checkInLog.map((log) => (
                   <div key={log.id} className="flex items-start gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100 animate-in slide-in-from-right-4 duration-300">
-                    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs">✓</div>
+                    <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xs"><Check className="w-4 h-4" /></div>
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-xs font-black text-slate-800">{log.name}</p>
