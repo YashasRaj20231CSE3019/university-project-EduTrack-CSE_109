@@ -50,26 +50,36 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
   const teacherNavItems = [
-    { id: '/', label: 'Overview', icon: LayoutDashboard, color: 'text-indigo-500' },
-    { id: '/attendance', label: 'Attendance', icon: ClipboardCheck, color: 'text-emerald-500' },
-    { id: '/students', label: 'Students', icon: Users, color: 'text-blue-500' },
-    { id: '/planner', label: 'Lesson Planner', icon: Wand2, color: 'text-purple-500' },
-    { id: '/schedule', label: 'Class Schedule', icon: CalendarDays, color: 'text-amber-500' },
-    { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-rose-500' },
-    { id: '/parents', label: 'Parent Portal', icon: UsersRound, color: 'text-teal-500' },
+    { id: '/', label: 'Overview', icon: LayoutDashboard, color: 'text-indigo-500', keywords: ['dashboard', 'home', 'main'] },
+    { id: '/attendance', label: 'Attendance', icon: ClipboardCheck, color: 'text-emerald-500', keywords: ['roll', 'present', 'absent'] },
+    { id: '/students', label: 'Students', icon: Users, color: 'text-blue-500', keywords: ['directory', 'list', 'profiles'] },
+    { id: '/planner', label: 'Lesson Planner', icon: Wand2, color: 'text-purple-500', keywords: ['ai', 'generate', 'activities'] },
+    { id: '/schedule', label: 'Class Schedule', icon: CalendarDays, color: 'text-amber-500', keywords: ['timetable', 'calendar', 'classes'] },
+    { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-rose-500', keywords: ['news', 'updates', 'messages'] },
+    { id: '/parents', label: 'Parent Portal', icon: UsersRound, color: 'text-teal-500', keywords: ['contacts', 'family', 'communication'] },
+    { id: '/quiz-maker', label: 'Quiz Maker', icon: BookOpen, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
   ];
 
   const studentNavItems = [
-    { id: '/', label: 'My Dashboard', icon: Home, color: 'text-indigo-500' },
-    { id: '/lesson-planner', label: 'Activity Planner', icon: BookOpen, color: 'text-emerald-500' },
-    { id: '/schedule', label: 'My Schedule', icon: CalendarDays, color: 'text-amber-500' },
-    { id: '/assignments', label: 'Assignments', icon: Library, color: 'text-rose-500' },
-    { id: '/my-progress', label: 'Grades & Progress', icon: TrendingUp, color: 'text-blue-500' },
-    { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-purple-500' },
+    { id: '/', label: 'My Dashboard', icon: Home, color: 'text-indigo-500', keywords: ['home', 'main', 'overview'] },
+    { id: '/lesson-planner', label: 'Activity Planner', icon: BookOpen, color: 'text-emerald-500', keywords: ['activities', 'tasks'] },
+    { id: '/schedule', label: 'My Schedule', icon: CalendarDays, color: 'text-amber-500', keywords: ['timetable', 'calendar', 'classes'] },
+    { id: '/assignments', label: 'Assignments', icon: Library, color: 'text-rose-500', keywords: ['homework', 'tasks', 'projects'] },
+    { id: '/my-progress', label: 'Grades & Progress', icon: TrendingUp, color: 'text-blue-500', keywords: ['marks', 'report', 'performance'] },
+    { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-purple-500', keywords: ['news', 'updates', 'messages'] },
+    { id: '/quizzes', label: 'My Quizzes', icon: ClipboardCheck, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
   ];
 
   const navItems = user.role === 'teacher' ? teacherNavItems : studentNavItems;
+
+  const searchResults = navItems.filter(item => 
+    item.label.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    item.keywords.some(k => k.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   const getActiveLabel = () => {
     const activeItem = navItems.find(item => 
@@ -196,9 +206,52 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
           
           <div className="flex items-center gap-6">
-            <div className="hidden md:flex items-center bg-slate-50 rounded-xl px-4 py-2 border border-slate-200 focus-within:ring-4 focus-within:ring-slate-900/5 focus-within:border-slate-300 transition-all">
-              <Search className="w-4 h-4 text-slate-400 mr-3" />
-              <input type="text" placeholder="Search students, activities, or announcements" className="bg-transparent border-none outline-none text-sm w-48 text-slate-900 font-medium placeholder:text-slate-400" />
+            <div className="hidden md:flex items-center relative">
+              <div className="flex items-center bg-slate-50 rounded-xl px-4 py-2 border border-slate-200 focus-within:ring-4 focus-within:ring-slate-900/5 focus-within:border-slate-300 transition-all">
+                <Search className="w-4 h-4 text-slate-400 mr-3" />
+                <input 
+                  type="text" 
+                  placeholder="Search features..." 
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowSearchResults(e.target.value.length > 0);
+                  }}
+                  onFocus={() => setShowSearchResults(searchTerm.length > 0)}
+                  onBlur={() => setTimeout(() => setShowSearchResults(false), 200)}
+                  className="bg-transparent border-none outline-none text-sm w-48 text-slate-900 font-medium placeholder:text-slate-400" 
+                />
+              </div>
+              
+              {showSearchResults && (
+                <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden z-[1050]">
+                  {searchResults.length > 0 ? (
+                    <div className="max-h-64 overflow-y-auto">
+                      {searchResults.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              navigate(item.id);
+                              setSearchTerm('');
+                              setShowSearchResults(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+                          >
+                            <Icon className={`w-4 h-4 ${item.color}`} />
+                            <span className="text-sm font-bold text-slate-700">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-sm text-slate-500 font-medium">
+                      No matching features found.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="relative">

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ScheduleEntry } from '../types';
 import { Printer, CalendarDays } from 'lucide-react';
+import { toPng } from 'html-to-image';
+import jsPDF from 'jspdf';
 
 interface ScheduleViewProps {
   schedule: ScheduleEntry[];
@@ -9,6 +11,8 @@ interface ScheduleViewProps {
 
 const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Timetable" }) => {
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const scheduleRef = useRef<HTMLDivElement>(null);
+  
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
   const allDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
   const timeSlots = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
@@ -22,6 +26,35 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
     const dayNum = i - startDayOffset + 1;
     return dayNum > 0 && dayNum <= totalDays ? dayNum : null;
   });
+
+  const handlePrintPDF = async () => {
+    if (!scheduleRef.current) return;
+    
+    try {
+      const dataUrl = await toPng(scheduleRef.current, { 
+        quality: 0.98, 
+        backgroundColor: '#ffffff',
+        pixelRatio: 2
+      });
+      
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'in',
+        format: 'a4'
+      });
+      
+      const imgProps = pdf.getImageProperties(dataUrl);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const margin = 0.5;
+      const printWidth = pdfWidth - (margin * 2);
+      const printHeight = (imgProps.height * printWidth) / imgProps.width;
+      
+      pdf.addImage(dataUrl, 'PNG', margin, margin, printWidth, printHeight);
+      pdf.save('timetable.pdf');
+    } catch (error) {
+      console.error('Failed to generate PDF', error);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -48,15 +81,16 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
               </button>
             </div>
             <button 
-              onClick={() => window.print()}
+              onClick={handlePrintPDF}
               className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-all uppercase tracking-widest hidden lg:flex items-center gap-2 shadow-lg shadow-slate-100 active:scale-95"
             >
-              <Printer className="w-4 h-4" /> PRINT
+              <Printer className="w-4 h-4" /> PRINT PDF
             </button>
           </div>
         </div>
 
-        {viewMode === 'week' ? (
+        <div ref={scheduleRef} className="bg-white">
+          {viewMode === 'week' ? (
           /* Weekly Grid View */
           <div className="overflow-x-auto animate-in fade-in zoom-in-95 duration-500">
             <div className="min-w-[800px]">
@@ -148,6 +182,7 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
              </div>
           </div>
         )}
+        </div>
       </div>
       
       {/* Dynamic Summary Cards */}
