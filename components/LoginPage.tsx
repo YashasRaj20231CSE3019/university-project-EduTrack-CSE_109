@@ -75,10 +75,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
               {[
-                { icon: <Bot className="w-6 h-6 text-indigo-200" />, title: 'AI Lesson Planner', desc: 'Generate objectives in seconds' },
-                { icon: <Smartphone className="w-6 h-6 text-indigo-200" />, title: 'QR Attendance', desc: 'Secure touchless check-in' },
-                { icon: <MessageSquare className="w-6 h-6 text-indigo-200" />, title: 'Real-time Chat', desc: 'Instant teacher-student sync' },
-                { icon: <BarChart3 className="w-6 h-6 text-indigo-200" />, title: 'Smart Analytics', desc: 'Track academic progress' },
+                { icon: <Bot className="w-6 h-6 text-cyan-400" />, title: 'AI Lesson Planner', desc: 'Generate objectives in seconds' },
+                { icon: <Smartphone className="w-6 h-6 text-emerald-400" />, title: 'QR Attendance', desc: 'Secure touchless check-in' },
+                { icon: <MessageSquare className="w-6 h-6 text-pink-400" />, title: 'Real-time Chat', desc: 'Instant teacher-student sync' },
+                { icon: <BarChart3 className="w-6 h-6 text-amber-400" />, title: 'Smart Analytics', desc: 'Track academic progress' },
               ].map((feature, i) => (
                 <motion.div 
                   key={i}
