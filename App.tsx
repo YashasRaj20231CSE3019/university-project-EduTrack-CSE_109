@@ -289,6 +289,16 @@ const App: React.FC = () => {
     }
   };
 
+  const handleEnrollStudent = async (studentData: Partial<Student>) => {
+    try {
+      await apiService.createStudent(studentData);
+      await fetchData();
+    } catch (error) {
+      console.error('Error enrolling student:', error);
+      throw error;
+    }
+  };
+
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     setNotifications(INITIAL_NOTIFICATIONS);
@@ -359,6 +369,7 @@ const App: React.FC = () => {
               onUpdateActivity={handleUpdateActivity}
               onUpdateAssignment={handleUpdateAssignment}
               onUpdateStudent={handleUpdateStudent}
+              onEnrollStudent={handleEnrollStudent}
               fetchData={fetchData}
             />
           ) : (
@@ -393,13 +404,14 @@ const TeacherRoutes: React.FC<{
   onUpdateActivity: (id: string, updates: Partial<Activity>) => Promise<void>;
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
   onUpdateStudent: (updatedStudent: Student) => Promise<void>;
+  onEnrollStudent: (studentData: Partial<Student>) => Promise<void>;
   fetchData: () => Promise<void>;
-}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, fetchData }) => (
+}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, onEnrollStudent, fetchData }) => (
   <Routes>
-    <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} />} />
+    <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} schedule={schedule} />} />
     <Route path="/attendance" element={<AttendanceSheet students={students} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
     <Route path="/schedule" element={<ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" />} />
-    <Route path="/students" element={<StudentDirectory students={students} />} />
+    <Route path="/students" element={<StudentDirectory students={students} onEnrollStudent={onEnrollStudent} />} />
     <Route path="/students/:id" element={
       <StudentDetailsWrapper 
         students={students} 
@@ -447,6 +459,7 @@ const StudentRoutes: React.FC<{
         <StudentDashboard 
           student={student} 
           attendance={attendance} 
+          schedule={schedule}
         />
       } />
       <Route path="/schedule" element={<ScheduleView schedule={schedule} title="My Timetable" />} />

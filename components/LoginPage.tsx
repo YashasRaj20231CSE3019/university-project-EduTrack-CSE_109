@@ -141,7 +141,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'
                   }`}
                 >
-                  <GraduationCap className="w-5 h-5" />
+                  <GraduationCap className="w-5 h-5 text-slate-900" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Teacher</span>
                 </button>
                 <button
@@ -153,7 +153,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'
                   }`}
                 >
-                  <Backpack className="w-5 h-5" />
+                  <Backpack className="w-5 h-5 text-rose-500" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Student</span>
                 </button>
               </div>

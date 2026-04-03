@@ -43,23 +43,22 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-      <div className="bg-emerald-600 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-emerald-200">
+      <div className="bg-emerald-600 rounded-3xl p-6 md:p-10 text-white relative overflow-hidden shadow-xl border border-emerald-500">
         <div className="relative z-10 text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-extrabold mb-4 leading-tight flex items-center justify-center md:justify-start gap-3">Activity Planner <BookOpen className="w-8 h-8 md:w-10 md:h-10" /></h1>
-          <p className="text-emerald-100 text-sm md:text-lg max-w-2xl">Stay ahead of your studies by reviewing upcoming activities and using our AI assistant to understand your syllabus better.</p>
+          <h1 className="text-2xl md:text-3xl font-bold mb-3 tracking-tight flex items-center justify-center md:justify-start gap-3">Activity Planner <BookOpen className="w-6 h-6 text-emerald-200" /></h1>
+          <p className="text-emerald-100 text-sm md:text-base max-w-2xl font-medium">Stay ahead of your studies by reviewing upcoming activities and using our AI assistant to understand your syllabus better.</p>
         </div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-400/20 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
       </div>
 
       {/* Curriculum AI Assistant Section */}
-      <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-emerald-100 shadow-xl shadow-emerald-50/50 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
         <div className="relative z-10">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200"><Sparkles className="w-6 h-6" /></div>
+            <div className="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-sm"><Sparkles className="w-5 h-5" /></div>
             <div>
-              <h3 className="text-2xl font-black text-slate-800">Syllabus Explainer</h3>
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Powered by Gemini AI</p>
+              <h3 className="text-lg font-bold text-slate-900 tracking-tight">Syllabus Explainer</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Powered by Gemini AI</p>
             </div>
           </div>
 
@@ -68,13 +67,13 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
               <textarea
                 value={curriculumQuery}
                 onChange={(e) => setCurriculumQuery(e.target.value)}
-                placeholder="Ask anything about your syllabus... (e.g., 'What will I learn in Science this term?' or 'Explain the key concepts of Algebra for my grade.')"
-                className="w-full p-6 pb-20 md:pb-6 bg-slate-50 border-2 border-slate-100 rounded-[2rem] text-slate-700 font-medium focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none transition-all min-h-[180px] md:min-h-[120px] resize-none"
+                placeholder="Ask anything about your syllabus..."
+                className="w-full p-5 pb-16 md:pb-5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 font-medium focus:ring-2 focus:ring-emerald-600/10 focus:border-emerald-600 focus:outline-none transition-all min-h-[140px] resize-none text-sm"
               />
               <button
                 type="submit"
                 disabled={isAskingCurriculum || !curriculumQuery.trim()}
-                className="absolute bottom-4 right-4 px-6 md:px-8 py-3 bg-emerald-600 text-white rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50"
+                className="absolute bottom-4 right-4 px-6 py-2 bg-emerald-600 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest shadow-sm hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50"
               >
                 {isAskingCurriculum ? 'Thinking...' : 'Ask Assistant'}
               </button>
@@ -82,18 +81,18 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
           </form>
 
           {curriculumResponse && (
-            <div className="mt-10 p-8 bg-emerald-50/50 rounded-[2.5rem] border border-emerald-100 animate-in fade-in slide-in-from-top-4 duration-500">
-              <div className="flex items-center justify-between mb-6">
-                <h4 className="text-sm font-black text-emerald-800 uppercase tracking-widest">AI Explanation</h4>
+            <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-200 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">AI Explanation</h4>
                 <button 
                   onClick={() => setCurriculumResponse(null)}
-                  className="text-emerald-600 hover:text-emerald-800 font-bold text-xs uppercase tracking-widest"
+                  className="text-slate-400 hover:text-slate-900 font-bold text-[10px] uppercase tracking-widest transition-colors"
                 >
                   Clear
                 </button>
               </div>
-              <div className="prose prose-emerald max-w-none">
-                <div className="markdown-body text-slate-700 leading-relaxed">
+              <div className="prose prose-slate max-w-none">
+                <div className="markdown-body text-slate-700 text-sm leading-relaxed">
                   <Markdown>{curriculumResponse}</Markdown>
                 </div>
               </div>
@@ -102,40 +101,40 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2 space-y-8">
-          <div className="flex items-center justify-between px-4">
-            <h3 className="text-2xl font-black text-slate-800">Upcoming Activities</h3>
-            <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-xs font-black uppercase tracking-widest">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Upcoming Activities</h3>
+            <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
               {plannedActivities.length} PLANNED
             </span>
           </div>
 
           <div className="space-y-6">
             {plannedActivities.map((act) => (
-              <div key={act.id} className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500 group">
+              <div key={act.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-6">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl">
+                      <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center border border-slate-100">
                         {act.subject === 'Science' ? <FlaskConical className="w-5 h-5" /> : act.subject === 'Math' ? <Calculator className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{act.subject}</p>
-                        <p className="text-xs font-bold text-slate-600">{act.duration}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">{act.subject}</p>
+                        <p className="text-[10px] font-bold text-slate-500">{act.duration}</p>
                       </div>
                     </div>
-                    <h4 className="text-xl md:text-2xl font-black text-slate-800 group-hover:text-indigo-600 transition-colors mb-3">{act.title}</h4>
-                    <p className="text-sm md:text-base text-slate-500 font-medium leading-relaxed mb-6">{act.description}</p>
+                    <h4 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mb-2 tracking-tight">{act.title}</h4>
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed mb-6">{act.description}</p>
                     
                     <button 
                       onClick={() => handleExplain(act)}
                       disabled={explainingId === act.id}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-all disabled:opacity-50"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all disabled:opacity-50"
                     >
                       {explainingId === act.id ? (
                         <>
-                          <span className="w-3 h-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></span>
+                          <span className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></span>
                           Thinking...
                         </>
                       ) : (
@@ -147,23 +146,23 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
                   </div>
                 </div>
 
-                <div className="p-5 md:p-6 bg-slate-50 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 grid md:grid-cols-2 gap-6 md:gap-8">
+                <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 grid md:grid-cols-2 gap-6">
                   <div>
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">What you'll learn</h5>
+                    <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Learning Objectives</h5>
                     <ul className="space-y-2">
                       {act.learningObjectives.map((obj, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <span className="text-indigo-500 font-bold">•</span>
-                          <span className="text-[10px] md:text-xs font-bold text-slate-700">{obj}</span>
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-slate-300 font-bold">•</span>
+                          <span className="text-[11px] font-medium text-slate-600">{obj}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   <div>
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Preparation</h5>
+                    <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Preparation</h5>
                     <div className="flex flex-wrap gap-2">
                       {act.materials.map((mat, i) => (
-                        <span key={i} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-600 text-[8px] md:text-[10px] font-black rounded-lg uppercase">
+                        <span key={i} className="px-2.5 py-1 bg-white border border-slate-200 text-slate-500 text-[9px] font-bold rounded uppercase tracking-wider">
                           {mat}
                         </span>
                       ))}
@@ -173,40 +172,40 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
               </div>
             ))}
             {plannedActivities.length === 0 && (
-              <div className="py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200 text-center">
-                <p className="text-slate-400 font-bold uppercase tracking-widest">No upcoming activities scheduled yet.</p>
+              <div className="py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200 text-center">
+                <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">No upcoming activities scheduled.</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="space-y-8">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
-            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" /> Recently Covered
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2 tracking-tight">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Recently Covered
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {completedActivities.slice(0, 5).map(act => (
-                <div key={act.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
-                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
-                    {act.subject === 'Science' ? <FlaskConical className="w-5 h-5" /> : act.subject === 'Math' ? <Calculator className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
+                <div key={act.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white border border-slate-100 text-slate-400 rounded-lg flex items-center justify-center">
+                    {act.subject === 'Science' ? <FlaskConical className="w-4 h-4" /> : act.subject === 'Math' ? <Calculator className="w-4 h-4" /> : <BookOpen className="w-4 h-4" />}
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">{act.title}</p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{act.subject}</p>
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-bold text-slate-900 truncate">{act.title}</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{act.subject}</p>
                   </div>
                 </div>
               ))}
               {completedActivities.length === 0 && (
-                <p className="text-xs text-slate-400 font-medium italic text-center py-4">No activities completed this week.</p>
+                <p className="text-[10px] text-slate-400 font-medium italic text-center py-4">No activities completed yet.</p>
               )}
             </div>
           </div>
 
-          <div className="bg-indigo-600 p-8 rounded-[2.5rem] text-white relative overflow-hidden group">
+          <div className="bg-emerald-600 p-6 rounded-3xl text-white relative overflow-hidden group shadow-sm">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
-            <h4 className="text-xl font-black mb-2">Study Tip</h4>
-            <p className="text-sm font-medium text-indigo-100 opacity-80 leading-relaxed">
+            <h4 className="text-sm font-bold mb-2 tracking-tight">Study Tip</h4>
+            <p className="text-xs font-medium text-emerald-100 leading-relaxed">
               Reviewing the learning objectives before class helps you focus on the most important concepts during the activity.
             </p>
           </div>
@@ -214,33 +213,32 @@ const LessonPlanner: React.FC<LessonPlannerProps> = ({ student, activities }) =>
       </div>
       {/* AI Explanation Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
-            <div className="bg-indigo-600 p-6 md:p-8 text-white relative overflow-hidden shrink-0">
-              <div className="relative z-10 flex justify-between items-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col border border-slate-200">
+            <div className="bg-white p-6 border-b border-slate-100 relative shrink-0">
+              <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">AI Assistant</p>
-                  <h3 className="text-xl md:text-2xl font-black flex items-center gap-2">Activity Deep Dive <Sparkles className="w-5 h-5" /></h3>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">AI Assistant</p>
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 tracking-tight">Activity Deep Dive <Sparkles className="w-4 h-4 text-emerald-500" /></h3>
                 </div>
                 <button 
                   onClick={() => setShowModal(false)}
-                  className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white text-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all active:scale-90"
+                  className="w-8 h-8 bg-slate-50 text-slate-400 rounded-lg flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-90"
                   aria-label="Close explanation"
                 >
-                  <X className="w-6 h-6 md:w-8 md:h-8" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
             </div>
-            <div className="p-6 md:p-8 overflow-y-auto prose prose-slate prose-indigo max-w-none flex-1">
-              <div className="markdown-body text-sm md:text-base">
+            <div className="p-6 md:p-8 overflow-y-auto prose prose-slate max-w-none flex-1">
+              <div className="markdown-body text-sm leading-relaxed text-slate-600">
                 <Markdown>{explanation || ''}</Markdown>
               </div>
             </div>
-            <div className="p-6 md:p-8 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
               <button 
                 onClick={() => setShowModal(false)}
-                className="w-full sm:w-auto px-8 py-3 bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition-all active:scale-95 shadow-lg text-xs md:text-sm"
+                className="w-full sm:w-auto px-6 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-all active:scale-95 shadow-sm text-xs"
               >
                 Got it, thanks!
               </button>

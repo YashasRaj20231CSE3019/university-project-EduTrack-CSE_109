@@ -76,6 +76,14 @@ export const apiService = {
     return res.json();
   },
 
+  async createStudent(student: Partial<Student>): Promise<{ success: boolean; id: string }> {
+    const res = await this.apiFetch('/students', {
+      method: 'POST',
+      body: JSON.stringify(student)
+    });
+    return res.json();
+  },
+
   async getAttendance(): Promise<AttendanceRecord[]> {
     const res = await this.apiFetch('/attendance');
     return res.json();

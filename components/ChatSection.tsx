@@ -195,10 +195,10 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
   }
 
   return (
-    <div className={`bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col ${fullHeight ? 'h-full' : 'h-[600px]'} animate-in fade-in slide-in-from-bottom-4 duration-300`}>
-      <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
-        <h4 className="font-black text-slate-800 uppercase text-[10px] md:text-xs tracking-widest flex items-center gap-2">
-          <MessageSquare className="w-4 h-4" /> Private Messages
+    <div className={`bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col ${fullHeight ? 'h-full' : 'h-[600px]'} animate-in fade-in slide-in-from-bottom-4 duration-300`}>
+      <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/30 flex justify-between items-center shrink-0">
+        <h4 className="font-bold text-slate-900 uppercase text-[10px] tracking-widest flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-slate-400" /> Private Messages
         </h4>
         {onClose && (
           <button 
@@ -216,16 +216,16 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
           <div className="flex p-2 gap-1 bg-slate-100/50">
             <button 
               onClick={() => setActiveTab('students')}
-              className={`flex-1 py-2 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
-                activeTab === 'students' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
+                activeTab === 'students' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               Students
             </button>
             <button 
               onClick={() => setActiveTab('teachers')}
-              className={`flex-1 py-2 rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest transition-all ${
-                activeTab === 'teachers' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
+                activeTab === 'teachers' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               Teachers
@@ -235,8 +235,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400">
-                <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest">Loading Users...</p>
+                <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-[10px] font-bold uppercase tracking-widest">Loading...</p>
               </div>
             ) : (activeTab === 'students' ? students : teachers).length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full gap-2 text-slate-400 p-4 text-center">
@@ -246,24 +246,24 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
               <button
                 key={user.id}
                 onClick={() => setSelectedUser(user)}
-                className={`w-full p-3 rounded-2xl flex items-center gap-3 transition-all ${
-                  selectedUser?.id === user.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 scale-[1.02]' : 'hover:bg-white hover:shadow-sm text-slate-700'
+                className={`w-full p-2.5 rounded-xl flex items-center gap-3 transition-all ${
+                  selectedUser?.id === user.id ? 'bg-indigo-600 text-white shadow-md' : 'hover:bg-white hover:shadow-sm text-slate-700'
                 }`}
               >
                 <div className="relative shrink-0">
-                  <img src={user.avatar} className="w-8 h-8 md:w-10 md:h-10 rounded-xl object-cover" alt={user.name} />
+                  <img src={user.avatar} className="w-8 h-8 rounded-lg object-cover" alt={user.name} />
                   {onlineUserIds.includes(user.id) && (
-                    <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full shadow-sm" />
                   )}
                 </div>
                 <div className="text-left overflow-hidden flex-1">
-                  <p className="text-[10px] md:text-xs font-black truncate leading-none mb-1">{user.name}</p>
-                  <p className={`text-[8px] md:text-[10px] font-bold uppercase tracking-tighter truncate ${selectedUser?.id === user.id ? 'text-indigo-100' : 'text-slate-400'}`}>
+                  <p className="text-[11px] font-bold truncate leading-none mb-1">{user.name}</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-tighter truncate ${selectedUser?.id === user.id ? 'text-slate-400' : 'text-slate-400'}`}>
                     {user.role}
                   </p>
                 </div>
                 {user.unreadCount && user.unreadCount > 0 && (
-                  <div className="bg-rose-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center shadow-sm animate-bounce">
+                  <div className="bg-rose-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center shadow-sm">
                     {user.unreadCount}
                   </div>
                 )}
@@ -284,7 +284,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                   )}
                 </div>
                 <div>
-                  <p className="text-xs font-black text-slate-800 leading-none mb-1">{selectedUser.name}</p>
+                  <p className="text-xs font-bold text-slate-900 leading-none mb-1">{selectedUser.name}</p>
                   <div className="flex items-center gap-1.5">
                     <div className={`w-1.5 h-1.5 rounded-full ${onlineUserIds.includes(selectedUser.id) ? 'bg-green-500' : 'bg-slate-300'}`} />
                     <p className={`text-[8px] font-bold uppercase tracking-widest ${onlineUserIds.includes(selectedUser.id) ? 'text-green-500' : 'text-slate-400'}`}>
@@ -300,7 +300,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                     key={msg.id || idx} 
                     className={`flex group ${msg.senderId === currentUserId ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-[80%] relative p-3 md:p-4 rounded-2xl text-xs md:text-sm font-medium shadow-sm ${
+                    <div className={`max-w-[80%] relative p-3 md:p-4 rounded-2xl text-xs font-medium shadow-sm ${
                       msg.senderId === currentUserId 
                         ? 'bg-indigo-600 text-white rounded-tr-none' 
                         : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none'
@@ -322,7 +322,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                             </button>
                             <button 
                               onClick={handleSaveEdit}
-                              className="px-3 py-1 bg-white text-indigo-600 rounded-md text-[10px] font-black uppercase shadow-sm"
+                              className="px-3 py-1 bg-white text-slate-900 rounded-md text-[10px] font-bold uppercase shadow-sm"
                             >
                               Save
                             </button>
@@ -330,9 +330,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                         </div>
                       ) : (
                         <>
-                          <p className="whitespace-pre-wrap">{msg.text}</p>
+                          <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
                           <div className="flex items-center justify-between mt-1 gap-4">
-                            <p className={`text-[8px] font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-indigo-200' : 'text-slate-400'}`}>
+                            <p className={`text-[8px] font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-slate-400' : 'text-slate-400'}`}>
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                             {msg.senderId === currentUserId && (
@@ -366,12 +366,12 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type your message..."
-                  className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:ring-2 focus:ring-indigo-900/10 focus:border-indigo-600 outline-none transition-all"
                 />
                 <button 
                   type="submit"
                   disabled={isSending || !newMessage.trim()}
-                  className="px-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-100"
+                  className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                 >
                   Send
                 </button>

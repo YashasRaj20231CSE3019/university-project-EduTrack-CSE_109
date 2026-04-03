@@ -47,7 +47,10 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
                 MONTH
               </button>
             </div>
-            <button className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-all uppercase tracking-widest hidden lg:flex items-center gap-2 shadow-lg shadow-slate-100 active:scale-95">
+            <button 
+              onClick={() => window.print()}
+              className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-all uppercase tracking-widest hidden lg:flex items-center gap-2 shadow-lg shadow-slate-100 active:scale-95"
+            >
               <Printer className="w-4 h-4" /> PRINT
             </button>
           </div>

@@ -141,18 +141,18 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
                   className="group bg-white p-4 md:p-6 rounded-[2rem] border border-slate-100 hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-50 transition-all cursor-pointer relative overflow-hidden"
                 >
                   <div className={`absolute top-0 right-0 w-1.5 md:w-2 h-full ${
-                    as.status === 'graded' ? 'bg-emerald-500' : as.status === 'submitted' ? 'bg-indigo-500' : 'bg-amber-500'
+                    as.status === 'graded' ? 'bg-green-500' : as.status === 'submitted' ? 'bg-indigo-500' : 'bg-amber-500'
                   }`}></div>
                   
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl ${
-                      as.subject === 'Science' ? 'bg-emerald-50 text-emerald-600' : 
+                      as.subject === 'Science' ? 'bg-green-50 text-green-600' : 
                       as.subject === 'Math' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-50 text-slate-600'
                     }`}>
                       {as.subject === 'Science' ? <FlaskConical className="w-5 h-5 md:w-6 md:h-6" /> : as.subject === 'Math' ? <Calculator className="w-5 h-5 md:w-6 md:h-6" /> : <FileText className="w-5 h-5 md:w-6 md:h-6" />}
                     </div>
                     <span className={`text-[8px] md:text-[10px] font-black px-2 md:px-3 py-1 rounded-full uppercase tracking-widest ${
-                      as.status === 'graded' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 
+                      as.status === 'graded' ? 'bg-green-50 text-green-700 border border-green-100' : 
                       as.status === 'submitted' ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 
                       'bg-amber-50 text-amber-700 border border-amber-100'
                     }`}>
@@ -192,7 +192,7 @@ const AssignmentsView: React.FC<AssignmentsViewProps> = ({ student, onUpdateAssi
       {selectedAssignment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 max-h-[90vh] flex flex-col">
-            <div className={`p-6 md:p-10 ${selectedAssignment.subject === 'Science' ? 'bg-emerald-600' : 'bg-indigo-600'} text-white relative shrink-0`}>
+            <div className={`p-6 md:p-10 ${selectedAssignment.subject === 'Science' ? 'bg-green-600' : 'bg-indigo-600'} text-white relative shrink-0`}>
                <button 
                 onClick={() => {
                   setSelectedAssignment(null);

@@ -191,6 +191,29 @@ app.get("/api/students/:id", requireAuth, (req: any, res) => {
   res.json(formattedStudent);
 });
 
+app.post("/api/students", requireTeacher, (req, res) => {
+  const { name, email, grade, avatar, behavioralNotes, parentContact } = req.body;
+  if (!name || !email || !grade) return res.status(400).json({ message: "Missing required fields" });
+
+  const id = `student-${Math.random().toString(36).substr(2, 9)}`;
+  const insert = db.prepare(`
+    INSERT INTO students (id, name, email, grade, avatar, behavioralNotes, parentContact)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  insert.run(
+    id, 
+    name, 
+    email.toLowerCase().trim(), 
+    grade, 
+    avatar || `https://picsum.photos/seed/${id}/200/200`,
+    JSON.stringify(behavioralNotes || []),
+    JSON.stringify(parentContact || {})
+  );
+  
+  res.json({ success: true, id });
+});
+
 // Attendance API
 app.get("/api/attendance", requireAuth, (req, res) => {
   const attendance = db.prepare('SELECT * FROM attendance ORDER BY date ASC').all() as any[];

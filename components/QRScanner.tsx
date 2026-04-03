@@ -130,8 +130,8 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
                   
                   {successMessage && (
                     <>
-                      <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto animate-bounce"><CheckCircle2 className="w-10 h-10" /></div>
-                      <p className="text-xl font-black text-emerald-600">{successMessage}</p>
+                      <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto animate-bounce"><CheckCircle2 className="w-10 h-10" /></div>
+                      <p className="text-xl font-black text-green-600">{successMessage}</p>
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Ready for next scan</p>
                     </>
                   )}
