@@ -115,13 +115,22 @@ export const QuizMaker: React.FC<QuizMakerProps> = ({ onSave }) => {
           </div>
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Subject</label>
-            <input 
-              type="text" 
+            <select 
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Math"
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 focus:outline-none text-sm transition-all"
-            />
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 focus:outline-none text-sm transition-all appearance-none"
+            >
+              <option value="">Select a subject</option>
+              <option value="Math">Math</option>
+              <option value="Science">Science</option>
+              <option value="English">English</option>
+              <option value="History">History</option>
+              <option value="Geography">Geography</option>
+              <option value="Art">Art</option>
+              <option value="Music">Music</option>
+              <option value="Physical Education">Physical Education</option>
+              <option value="Computer Science">Computer Science</option>
+            </select>
           </div>
         </div>
 

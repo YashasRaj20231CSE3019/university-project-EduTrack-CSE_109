@@ -1,34 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, ChevronRight, AlertTriangle, BookOpen, ArrowLeft } from 'lucide-react';
 import { Student } from '../types';
-
-// Mock quiz data for demonstration
-const MOCK_QUIZ = {
-  id: 'q1',
-  title: 'Algebraic Equations Review',
-  subject: 'Math',
-  questions: [
-    {
-      id: '1',
-      text: 'Solve for x: 2x + 5 = 15',
-      type: 'multiple-choice',
-      options: ['x = 5', 'x = 10', 'x = 20', 'x = 2.5'],
-      correctAnswer: 'x = 5'
-    },
-    {
-      id: '2',
-      text: 'What is the value of y in the equation 3y - 7 = 14?',
-      type: 'multiple-choice',
-      options: ['y = 7', 'y = 21', 'y = -7', 'y = 3'],
-      correctAnswer: 'y = 7'
-    },
-    {
-      id: '3',
-      text: 'Explain the difference between an expression and an equation.',
-      type: 'short-answer'
-    }
-  ]
-};
+import { quizService } from '../services/quizService';
 
 interface QuizTakerProps {
   student?: Student;
@@ -42,9 +15,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ student }) => {
   const [score, setScore] = useState<number | null>(null);
 
   useEffect(() => {
-    const savedQuizzes = JSON.parse(localStorage.getItem('edutrack_quizzes') || '[]');
-    // Combine mock quiz with saved quizzes
-    setQuizzes([MOCK_QUIZ, ...savedQuizzes]);
+    setQuizzes(quizService.getQuizzes());
   }, []);
 
   const handleAnswerChange = (questionId: string, value: string) => {

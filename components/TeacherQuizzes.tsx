@@ -1,31 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Plus, Users, ChevronRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Plus, Users, ChevronRight, ArrowLeft, CheckCircle2, Trash2, AlertTriangle, X } from 'lucide-react';
 import { QuizMaker } from './QuizMaker';
+import { quizService } from '../services/quizService';
 
 export const TeacherQuizzes: React.FC = () => {
   const [quizzes, setQuizzes] = useState<any[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<any | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [submissions, setSubmissions] = useState<any[]>([]);
+  const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadQuizzes();
   }, [isCreating]);
 
   const loadQuizzes = () => {
-    const savedQuizzes = JSON.parse(localStorage.getItem('edutrack_quizzes') || '[]');
-    // Mock quiz data for demonstration
-    const MOCK_QUIZ = {
-      id: 'q1',
-      title: 'Algebraic Equations Review',
-      subject: 'Math',
-      questions: [
-        { id: '1', text: 'Solve for x: 2x + 5 = 15', type: 'multiple-choice', options: ['x = 5', 'x = 10', 'x = 20', 'x = 2.5'], correctAnswer: 'x = 5' },
-        { id: '2', text: 'What is the value of y in the equation 3y - 7 = 14?', type: 'multiple-choice', options: ['y = 7', 'y = 21', 'y = -7', 'y = 3'], correctAnswer: 'y = 7' },
-        { id: '3', text: 'Explain the difference between an expression and an equation.', type: 'short-answer' }
-      ]
-    };
-    setQuizzes([MOCK_QUIZ, ...savedQuizzes]);
+    setQuizzes(quizService.getQuizzes());
   };
 
   const loadSubmissions = (quizId: string) => {
@@ -45,6 +35,19 @@ export const TeacherQuizzes: React.FC = () => {
     );
     localStorage.setItem('edutrack_quiz_submissions', JSON.stringify(updatedSubmissions));
     setSubmissions(updatedSubmissions.filter((sub: any) => sub.quizId === selectedQuiz.id));
+  };
+
+  const handleDeleteQuiz = (e: React.MouseEvent, quizId: string) => {
+    e.stopPropagation(); // Prevent opening the quiz
+    setQuizToDelete(quizId);
+  };
+
+  const confirmDelete = () => {
+    if (quizToDelete) {
+      quizService.deleteQuiz(quizToDelete);
+      setQuizToDelete(null);
+      loadQuizzes();
+    }
   };
 
   if (isCreating) {
@@ -172,8 +175,15 @@ export const TeacherQuizzes: React.FC = () => {
           <div 
             key={quiz.id} 
             onClick={() => handleSelectQuiz(quiz)}
-            className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group flex flex-col h-full"
+            className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group flex flex-col h-full relative"
           >
+            <button 
+              onClick={(e) => handleDeleteQuiz(e, quiz.id)}
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+              title="Delete Quiz"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
             <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <BookOpen className="w-6 h-6" />
             </div>
@@ -189,6 +199,35 @@ export const TeacherQuizzes: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {quizToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <AlertTriangle className="w-8 h-8 text-rose-600" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 text-center mb-2">Delete Quiz?</h3>
+            <p className="text-slate-500 text-center mb-8 font-medium">
+              This action cannot be undone. All student submissions for this quiz will also be permanently deleted.
+            </p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setQuizToDelete(null)}
+                className="flex-1 px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDelete}
+                className="flex-1 px-6 py-3 bg-rose-600 text-white rounded-xl font-bold text-sm hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
