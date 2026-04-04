@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { CheckCircle2, ChevronRight, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle2, ChevronRight, AlertTriangle, BookOpen, ArrowLeft } from 'lucide-react';
+import { Student } from '../types';
 
 // Mock quiz data for demonstration
 const MOCK_QUIZ = {
@@ -29,21 +30,35 @@ const MOCK_QUIZ = {
   ]
 };
 
-export const QuizTaker: React.FC = () => {
+interface QuizTakerProps {
+  student?: Student;
+}
+
+export const QuizTaker: React.FC<QuizTakerProps> = ({ student }) => {
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [selectedQuiz, setSelectedQuiz] = useState<any | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+
+  useEffect(() => {
+    const savedQuizzes = JSON.parse(localStorage.getItem('edutrack_quizzes') || '[]');
+    // Combine mock quiz with saved quizzes
+    setQuizzes([MOCK_QUIZ, ...savedQuizzes]);
+  }, []);
 
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers({ ...answers, [questionId]: value });
   };
 
   const handleSubmit = () => {
+    if (!selectedQuiz) return;
+    
     // Calculate score for multiple choice questions
     let correct = 0;
     let totalMC = 0;
     
-    MOCK_QUIZ.questions.forEach(q => {
+    selectedQuiz.questions.forEach((q: any) => {
       if (q.type === 'multiple-choice') {
         totalMC++;
         if (answers[q.id] === q.correctAnswer) {
@@ -52,9 +67,73 @@ export const QuizTaker: React.FC = () => {
       }
     });
 
-    setScore(totalMC > 0 ? Math.round((correct / totalMC) * 100) : null);
+    const finalScore = totalMC > 0 ? Math.round((correct / totalMC) * 100) : null;
+    setScore(finalScore);
+    
+    // Save submission
+    const existingSubmissions = JSON.parse(localStorage.getItem('edutrack_quiz_submissions') || '[]');
+    
+    // Get current user data
+    const studentName = student ? student.name : "Current Student"; 
+    const studentId = student ? student.id : 'student-123';
+    
+    const newSubmission = {
+      id: Date.now().toString(),
+      quizId: selectedQuiz.id,
+      studentId: studentId,
+      studentName: studentName,
+      answers: answers,
+      score: finalScore,
+      submittedAt: new Date().toISOString()
+    };
+    
+    localStorage.setItem('edutrack_quiz_submissions', JSON.stringify([...existingSubmissions, newSubmission]));
+    
     setSubmitted(true);
   };
+
+  const handleReturnToQuizzes = () => {
+    setSelectedQuiz(null);
+    setAnswers({});
+    setSubmitted(false);
+    setScore(null);
+  };
+
+  if (!selectedQuiz) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-black text-slate-900">My Quizzes</h2>
+            <p className="text-sm font-medium text-slate-500">Select a quiz to begin</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {quizzes.map((quiz) => (
+            <div 
+              key={quiz.id} 
+              onClick={() => setSelectedQuiz(quiz)}
+              className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group flex flex-col h-full"
+            >
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">{quiz.title}</h3>
+              <div className="flex items-center gap-3 mt-auto pt-4">
+                <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold uppercase tracking-widest">
+                  {quiz.subject}
+                </span>
+                <span className="text-xs font-bold text-slate-400">
+                  {quiz.questions?.length || 0} Questions
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -76,10 +155,10 @@ export const QuizTaker: React.FC = () => {
           
           <div>
             <button 
-              onClick={() => window.history.back()}
+              onClick={handleReturnToQuizzes}
               className="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
             >
-              Return to Dashboard
+              Return to Quizzes
             </button>
           </div>
         </div>
@@ -89,21 +168,28 @@ export const QuizTaker: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <button 
+        onClick={() => setSelectedQuiz(null)}
+        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" /> Back to Quizzes
+      </button>
+
       <div className="bg-white p-8 md:p-10 rounded-3xl border border-slate-200 shadow-sm">
         <div className="mb-8 pb-8 border-b border-slate-100">
           <div className="flex items-center gap-3 mb-3">
             <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-bold uppercase tracking-widest">
-              {MOCK_QUIZ.subject}
+              {selectedQuiz.subject}
             </span>
             <span className="text-xs font-bold text-slate-400">
-              {MOCK_QUIZ.questions.length} Questions
+              {selectedQuiz.questions?.length || 0} Questions
             </span>
           </div>
-          <h1 className="text-3xl font-black text-slate-900">{MOCK_QUIZ.title}</h1>
+          <h1 className="text-3xl font-black text-slate-900">{selectedQuiz.title}</h1>
         </div>
 
         <div className="space-y-10">
-          {MOCK_QUIZ.questions.map((q, index) => (
+          {selectedQuiz.questions?.map((q: any, index: number) => (
             <div key={q.id} className="space-y-4">
               <div className="flex gap-4">
                 <span className="text-lg font-black text-indigo-300">{index + 1}.</span>
@@ -113,7 +199,7 @@ export const QuizTaker: React.FC = () => {
               <div className="pl-8">
                 {q.type === 'multiple-choice' ? (
                   <div className="space-y-3">
-                    {q.options?.map((opt, optIndex) => (
+                    {q.options?.map((opt: string, optIndex: number) => (
                       <label 
                         key={optIndex} 
                         className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
@@ -122,6 +208,14 @@ export const QuizTaker: React.FC = () => {
                             : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
                         }`}
                       >
+                        <input 
+                          type="radio" 
+                          name={`question-${q.id}`}
+                          value={opt}
+                          checked={answers[q.id] === opt}
+                          onChange={() => handleAnswerChange(q.id, opt)}
+                          className="hidden" 
+                        />
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                           answers[q.id] === opt ? 'border-indigo-600' : 'border-slate-300'
                         }`}>
@@ -153,7 +247,7 @@ export const QuizTaker: React.FC = () => {
           </div>
           <button 
             onClick={handleSubmit}
-            disabled={Object.keys(answers).length < MOCK_QUIZ.questions.length}
+            disabled={Object.keys(answers).length < (selectedQuiz.questions?.length || 0)}
             className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-xl shadow-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             Submit Quiz <ChevronRight className="w-5 h-5" />

@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Save, CheckCircle2, X } from 'lucide-react';
+import { apiService } from '../services/apiService';
 
-export const QuizMaker: React.FC = () => {
+interface QuizMakerProps {
+  onSave?: () => void;
+}
+
+export const QuizMaker: React.FC<QuizMakerProps> = ({ onSave }) => {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [questions, setQuestions] = useState([
@@ -51,10 +56,46 @@ export const QuizMaker: React.FC = () => {
     setQuestions(questions.filter(q => q.id !== id));
   };
 
-  const handleSave = () => {
-    // In a real app, save to backend
+  const handleSave = async () => {
+    if (!title || !subject) {
+      alert("Please enter a title and subject for the quiz.");
+      return;
+    }
+
+    const newQuiz = {
+      id: Date.now().toString(),
+      title,
+      subject,
+      questions
+    };
+
+    const existingQuizzes = JSON.parse(localStorage.getItem('edutrack_quizzes') || '[]');
+    localStorage.setItem('edutrack_quizzes', JSON.stringify([...existingQuizzes, newQuiz]));
+
+    // Create an announcement for the new quiz
+    try {
+      await apiService.createAnnouncement({
+        id: `ann-${Date.now()}`,
+        title: `New Quiz: ${title}`,
+        message: `A new quiz for ${subject} has been published. Please check your Quizzes section.`,
+        createdAt: new Date().toISOString(),
+        authorName: 'Teacher',
+        priority: 'high',
+        targetRole: 'student'
+      });
+    } catch (err) {
+      console.error("Failed to create announcement", err);
+    }
+
     setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setTimeout(() => {
+      setSaved(false);
+      // Reset form after saving
+      setTitle('');
+      setSubject('');
+      setQuestions([{ id: Date.now().toString(), text: '', type: 'multiple-choice', options: ['', ''], correctAnswer: '' }]);
+      if (onSave) onSave();
+    }, 2000);
   };
 
   return (

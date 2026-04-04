@@ -391,7 +391,7 @@ const App: React.FC = () => {
   );
 };
 
-import { QuizMaker } from './components/QuizMaker';
+import { TeacherQuizzes } from './components/TeacherQuizzes';
 import { QuizTaker } from './components/QuizTaker';
 
 const TeacherRoutes: React.FC<{
@@ -431,7 +431,7 @@ const TeacherRoutes: React.FC<{
     <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
     <Route path="/parents" element={<ParentPortal />} />
     <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
-    <Route path="/quiz-maker" element={<QuizMaker />} />
+    <Route path="/quizzes" element={<TeacherQuizzes />} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
@@ -482,7 +482,7 @@ const StudentRoutes: React.FC<{
       } />
       <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
       <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
-      <Route path="/quizzes" element={<QuizTaker />} />
+      <Route path="/quizzes" element={<QuizTaker student={student} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

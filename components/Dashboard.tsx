@@ -228,7 +228,7 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities,
               <p className="text-xs font-bold text-slate-900 mb-1 tracking-tight">Weekly Quiz Tomorrow!</p>
               <p className="text-[10px] text-slate-400 font-medium mb-4">Algebraic Equations review.</p>
               <button 
-                onClick={() => navigate('/quiz-maker')}
+                onClick={() => navigate('/quizzes')}
                 className="w-full py-2 bg-white border border-slate-200 text-slate-900 rounded-lg text-[10px] font-bold hover:bg-slate-50 transition-colors shadow-sm uppercase tracking-widest"
               >
                 Create Quiz

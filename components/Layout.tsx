@@ -61,7 +61,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/schedule', label: 'Class Schedule', icon: CalendarDays, color: 'text-amber-500', keywords: ['timetable', 'calendar', 'classes'] },
     { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-rose-500', keywords: ['news', 'updates', 'messages'] },
     { id: '/parents', label: 'Parent Portal', icon: UsersRound, color: 'text-teal-500', keywords: ['contacts', 'family', 'communication'] },
-    { id: '/quiz-maker', label: 'Quiz Maker', icon: BookOpen, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
+    { id: '/quizzes', label: 'Quizzes', icon: BookOpen, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
   ];
 
   const studentNavItems = [
@@ -257,13 +257,13 @@ const Layout: React.FC<LayoutProps> = ({
             <div className="relative">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
-                className={`relative p-2.5 rounded-xl transition-all border ${
-                  showNotifications ? 'bg-indigo-600 text-white border-indigo-600' : 'text-slate-400 hover:text-slate-900 hover:bg-slate-50 border-transparent'
+                className={`relative p-2.5 rounded-xl transition-all border-2 ${
+                  showNotifications ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-200' : 'text-amber-500 border-amber-200 hover:bg-amber-50 hover:border-amber-400'
                 }`}
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full"></span>
                 )}
               </button>
 
