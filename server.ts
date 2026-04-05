@@ -646,24 +646,41 @@ app.post("/api/messages/read", requireAuth, (req: any, res) => {
 });
 
 app.post("/api/messages", requireAuth, (req: any, res) => {
-  const { receiverId, text } = req.body;
+  const { receiverId, text, attachmentUrl, attachmentName, attachmentType } = req.body;
   const senderId = req.user!.id;
   const senderName = req.user!.name;
   const id = Math.random().toString(36).substr(2, 9);
   const timestamp = new Date().toISOString();
   
   db.prepare(`
-    INSERT INTO messages (id, senderId, receiverId, text, timestamp, read)
-    VALUES (?, ?, ?, ?, ?, 0)
-  `).run(id, senderId, receiverId, text, timestamp);
+    INSERT INTO messages (id, senderId, receiverId, text, timestamp, read, attachmentUrl, attachmentName, attachmentType)
+    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
+  `).run(id, senderId, receiverId, text, timestamp, attachmentUrl || null, attachmentName || null, attachmentType || null);
   
-  const message = { id, senderId, receiverId, text, timestamp, read: 0, senderName };
+  const message = { id, senderId, receiverId, text, timestamp, read: 0, senderName, attachmentUrl, attachmentName, attachmentType };
   
   // Notify both sender and receiver via socket rooms (supports multiple tabs)
   io.to(String(senderId)).emit("message:new", message);
   io.to(String(receiverId)).emit("message:new", message);
   
   res.json(message);
+});
+
+app.post("/api/chat/upload", requireAuth, upload.single("file"), (req: any, res) => {
+  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+  
+  const fileUrl = `/uploads/${req.file.filename}`;
+  const fileName = req.file.originalname;
+  const mimeType = req.file.mimetype;
+  let attachmentType = 'other';
+  if (mimeType.startsWith('image/')) attachmentType = 'image';
+  else if (mimeType.includes('pdf') || mimeType.includes('document') || mimeType.includes('text') || mimeType.includes('msword') || mimeType.includes('excel')) attachmentType = 'document';
+  
+  res.json({
+    url: fileUrl,
+    name: fileName,
+    type: attachmentType
+  });
 });
 
 app.patch("/api/messages/:id", requireAuth, (req: any, res) => {

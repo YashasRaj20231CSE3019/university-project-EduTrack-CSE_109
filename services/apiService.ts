@@ -240,11 +240,37 @@ export const apiService = {
     return res.json();
   },
 
-  async sendMessage(receiverId: string, text: string): Promise<any> {
+  async sendMessage(receiverId: string, text: string, attachmentUrl?: string, attachmentName?: string, attachmentType?: string): Promise<any> {
     const res = await this.apiFetch('/messages', {
       method: 'POST',
-      body: JSON.stringify({ receiverId, text })
+      body: JSON.stringify({ receiverId, text, attachmentUrl, attachmentName, attachmentType })
     });
+    return res.json();
+  },
+
+  async uploadChatAttachment(file: File): Promise<{ url: string; name: string; type: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const token = this.getAuthToken();
+    const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    const res = await fetch(`${API_BASE}/chat/upload`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+    
+    if (res.status === 401) {
+      this.setAuthToken(null);
+      throw new Error('Unauthorized');
+    }
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to upload attachment');
+    }
+    
     return res.json();
   },
 

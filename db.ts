@@ -93,7 +93,10 @@ export function initDb() {
       receiverId TEXT NOT NULL,
       text TEXT NOT NULL,
       timestamp TEXT NOT NULL,
-      read INTEGER DEFAULT 0
+      read INTEGER DEFAULT 0,
+      attachmentUrl TEXT,
+      attachmentName TEXT,
+      attachmentType TEXT
     );
   `);
 
@@ -110,6 +113,23 @@ export function initDb() {
   }
   try {
     db.exec("ALTER TABLE assignments ADD COLUMN comments TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
+
+  // Migration: Add attachment fields to messages if they don't exist
+  try {
+    db.exec("ALTER TABLE messages ADD COLUMN attachmentUrl TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
+  try {
+    db.exec("ALTER TABLE messages ADD COLUMN attachmentName TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
+  try {
+    db.exec("ALTER TABLE messages ADD COLUMN attachmentType TEXT;");
   } catch (e) {
     // Column might already exist
   }

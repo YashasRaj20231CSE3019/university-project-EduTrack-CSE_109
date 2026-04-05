@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import { ChatUser, ChatMessage } from '../types';
 import { apiService } from '../services/apiService';
-import { MessageSquare, X, MessageCircle } from 'lucide-react';
+import { MessageSquare, X, MessageCircle, Paperclip, FileText, Image as ImageIcon } from 'lucide-react';
 
 interface ChatSectionProps {
   currentUserId: string;
@@ -21,11 +21,13 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
   const [selectedUser, setSelectedUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const lastInitialIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -141,19 +143,28 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUser || !newMessage.trim() || isSending) return;
+    if (!selectedUser || (!newMessage.trim() && !attachmentFile) || isSending) return;
 
     setIsSending(true);
     try {
-      const sentMsg = await apiService.sendMessage(selectedUser.id, newMessage);
-      // We don't add it here because socket will handle it (or we can add it and socket handles duplicate)
-      // Actually, socket emits to sender too now.
-      // But to be safe and responsive:
+      let attachmentUrl, attachmentName, attachmentType;
+      
+      if (attachmentFile) {
+        const uploadResult = await apiService.uploadChatAttachment(attachmentFile);
+        attachmentUrl = uploadResult.url;
+        attachmentName = uploadResult.name;
+        attachmentType = uploadResult.type;
+      }
+
+      const sentMsg = await apiService.sendMessage(selectedUser.id, newMessage, attachmentUrl, attachmentName, attachmentType);
+      
       setMessages(prev => {
         if (prev.some(m => m.id === sentMsg.id)) return prev;
         return [...prev, sentMsg];
       });
       setNewMessage('');
+      setAttachmentFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error('Failed to send message:', err);
     } finally {
@@ -183,6 +194,12 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
       setMessages(prev => prev.filter(m => m.id !== id));
     } catch (err) {
       console.error('Failed to delete message:', err);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setAttachmentFile(e.target.files[0]);
     }
   };
 
@@ -330,16 +347,33 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                         </div>
                       ) : (
                         <>
-                          <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                          {msg.attachmentUrl && (
+                            <div className="mb-2">
+                              {msg.attachmentType === 'image' ? (
+                                <img src={msg.attachmentUrl} alt={msg.attachmentName || 'Attachment'} className="max-w-full rounded-lg max-h-48 object-cover" />
+                              ) : (
+                                <a 
+                                  href={msg.attachmentUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className={`flex items-center gap-2 p-2 rounded-lg border ${msg.senderId === currentUserId ? 'bg-indigo-700/50 border-indigo-500 text-white hover:bg-indigo-700' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'} transition-colors`}
+                                >
+                                  <FileText className="w-4 h-4 shrink-0" />
+                                  <span className="truncate text-[10px] font-bold">{msg.attachmentName || 'Document'}</span>
+                                </a>
+                              )}
+                            </div>
+                          )}
+                          {msg.text && <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>}
                           <div className="flex items-center justify-between mt-1 gap-4">
-                            <p className={`text-[8px] font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-slate-400' : 'text-slate-400'}`}>
+                            <p className={`text-[8px] font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-indigo-200' : 'text-slate-400'}`}>
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                             {msg.senderId === currentUserId && (
                               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 
                                   onClick={() => handleStartEdit(msg)}
-                                  className="text-[8px] font-bold uppercase hover:text-white transition-colors"
+                                  className="text-[8px] font-bold uppercase hover:text-white transition-colors text-indigo-200"
                                 >
                                   Edit
                                 </button>
@@ -360,7 +394,39 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                 <div ref={messagesEndRef} />
               </div>
 
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-100 flex gap-2 shrink-0">
+              {attachmentFile && (
+                <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                    <Paperclip className="w-4 h-4 text-slate-400" />
+                    <span className="truncate max-w-[200px]">{attachmentFile.name}</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setAttachmentFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
+                    className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-100 flex gap-2 shrink-0 items-center">
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="image/*,.pdf,.doc,.docx,.txt,.xls,.xlsx"
+                />
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
                 <input 
                   type="text" 
                   value={newMessage}
@@ -370,10 +436,10 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                 />
                 <button 
                   type="submit"
-                  disabled={isSending || !newMessage.trim()}
+                  disabled={isSending || (!newMessage.trim() && !attachmentFile)}
                   className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                 >
-                  Send
+                  {isSending ? 'Sending...' : 'Send'}
                 </button>
               </form>
             </>

@@ -112,6 +112,9 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   read: boolean;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentType?: 'image' | 'document' | 'other';
 }
 
 export interface ChatRoom {
