@@ -393,6 +393,7 @@ const App: React.FC = () => {
 
 import { TeacherQuizzes } from './components/TeacherQuizzes';
 import { QuizTaker } from './components/QuizTaker';
+import { ExamsPanel } from './components/ExamsPanel';
 
 const TeacherRoutes: React.FC<{
   students: Student[];
@@ -432,6 +433,7 @@ const TeacherRoutes: React.FC<{
     <Route path="/parents" element={<ParentPortal />} />
     <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
     <Route path="/quizzes" element={<TeacherQuizzes />} />
+    <Route path="/exams" element={<ExamsPanel user={currentUser} students={students} />} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
@@ -483,6 +485,7 @@ const StudentRoutes: React.FC<{
       <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
       <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
       <Route path="/quizzes" element={<QuizTaker student={student} />} />
+      <Route path="/exams" element={<ExamsPanel user={currentUser} students={[student]} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

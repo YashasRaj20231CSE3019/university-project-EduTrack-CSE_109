@@ -24,7 +24,8 @@ import {
   AlertTriangle,
   XCircle,
   Inbox,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -62,6 +63,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-rose-500', keywords: ['news', 'updates', 'messages'] },
     { id: '/parents', label: 'Parent Portal', icon: UsersRound, color: 'text-teal-500', keywords: ['contacts', 'family', 'communication'] },
     { id: '/quizzes', label: 'Quizzes', icon: BookOpen, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
+    { id: '/exams', label: 'Exams', icon: FileText, color: 'text-indigo-600', keywords: ['results', 'marks', 'hall ticket', 'midterm', 'endterm'] },
   ];
 
   const studentNavItems = [
@@ -72,6 +74,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/my-progress', label: 'Grades & Progress', icon: TrendingUp, color: 'text-blue-500', keywords: ['marks', 'report', 'performance'] },
     { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-purple-500', keywords: ['news', 'updates', 'messages'] },
     { id: '/quizzes', label: 'My Quizzes', icon: ClipboardCheck, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
+    { id: '/exams', label: 'Exams', icon: FileText, color: 'text-indigo-600', keywords: ['results', 'marks', 'hall ticket', 'midterm', 'endterm'] },
   ];
 
   const navItems = user.role === 'teacher' ? teacherNavItems : studentNavItems;

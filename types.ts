@@ -135,3 +135,30 @@ export interface AuthToken {
   role: Role;
   name: string;
 }
+
+export interface ExamResult {
+  id: string;
+  studentId: string;
+  studentName: string;
+  examType: 'Midterm' | 'Endterm';
+  subject: string;
+  marks: number;
+  totalMarks: number;
+  grade: string;
+  date: string;
+}
+
+export interface HallTicket {
+  id: string;
+  studentId: string;
+  studentName: string;
+  grade: string;
+  examType: 'Midterm' | 'Endterm';
+  examCenter: string;
+  rollNumber: string;
+  subjects: {
+    name: string;
+    date: string;
+    time: string;
+  }[];
+}
