@@ -141,6 +141,8 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const [replyingToMessage, setReplyingToMessage] = useState<ChatMessage | null>(null);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser || (!newMessage.trim() && !attachmentFile) || isSending) return;
@@ -156,7 +158,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
         attachmentType = uploadResult.type;
       }
 
-      const sentMsg = await apiService.sendMessage(selectedUser.id, newMessage, attachmentUrl, attachmentName, attachmentType);
+      const sentMsg = await apiService.sendMessage(selectedUser.id, newMessage, attachmentUrl, attachmentName, attachmentType, replyingToMessage?.id);
       
       setMessages(prev => {
         if (prev.some(m => m.id === sentMsg.id)) return prev;
@@ -164,6 +166,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
       });
       setNewMessage('');
       setAttachmentFile(null);
+      setReplyingToMessage(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -227,9 +230,9 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
         )}
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Sidebar */}
-        <div className="w-1/3 border-r border-slate-100 flex flex-col bg-slate-50/30">
+        <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-r border-slate-100 flex-col bg-slate-50/30 absolute md:relative inset-0 z-10`}>
           <div className="flex p-2 gap-1 bg-slate-100/50">
             <button 
               onClick={() => setActiveTab('students')}
@@ -290,10 +293,16 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
         </div>
 
         {/* Chat Window */}
-        <div className="flex-1 flex flex-col bg-white">
+        <div className={`${selectedUser ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white absolute md:relative inset-0 z-20`}>
           {selectedUser ? (
             <>
               <div className="p-4 border-b border-slate-100 flex items-center gap-3 shrink-0">
+                <button 
+                  onClick={() => setSelectedUser(null)}
+                  className="md:hidden p-2 -ml-2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
                 <div className="relative shrink-0">
                   <img src={selectedUser.avatar} className="w-8 h-8 rounded-lg object-cover" alt={selectedUser.name} />
                   {onlineUserIds.includes(selectedUser.id) && (
@@ -347,6 +356,14 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                         </div>
                       ) : (
                         <>
+                          {msg.replyToId && (
+                            <div className={`mb-2 p-2 rounded-lg text-[10px] border-l-2 ${msg.senderId === currentUserId ? 'bg-indigo-700/50 border-indigo-300 text-indigo-100' : 'bg-slate-100 border-slate-300 text-slate-500'}`}>
+                              <p className="font-bold mb-0.5 opacity-80">Replying to a message...</p>
+                              <p className="truncate opacity-90">
+                                {messages.find(m => m.id === msg.replyToId)?.text || 'Message not found'}
+                              </p>
+                            </div>
+                          )}
                           {msg.attachmentUrl && (
                             <div className="mb-2">
                               {msg.attachmentType === 'image' ? (
@@ -369,22 +386,30 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                             <p className={`text-[8px] font-bold uppercase tracking-tighter ${msg.senderId === currentUserId ? 'text-indigo-200' : 'text-slate-400'}`}>
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
-                            {msg.senderId === currentUserId && (
-                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button 
-                                  onClick={() => handleStartEdit(msg)}
-                                  className="text-[8px] font-bold uppercase hover:text-white transition-colors text-indigo-200"
-                                >
-                                  Edit
-                                </button>
-                                <button 
-                                  onClick={() => handleDeleteMessage(msg.id)}
-                                  className="text-[8px] font-bold uppercase text-rose-300 hover:text-rose-100 transition-colors"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button 
+                                onClick={() => setReplyingToMessage(msg)}
+                                className={`text-[8px] font-bold uppercase hover:text-white transition-colors ${msg.senderId === currentUserId ? 'text-indigo-200' : 'text-slate-400 hover:text-slate-600'}`}
+                              >
+                                Reply
+                              </button>
+                              {msg.senderId === currentUserId && (
+                                <>
+                                  <button 
+                                    onClick={() => handleStartEdit(msg)}
+                                    className="text-[8px] font-bold uppercase hover:text-white transition-colors text-indigo-200"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteMessage(msg.id)}
+                                    className="text-[8px] font-bold uppercase text-rose-300 hover:text-rose-100 transition-colors"
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </>
                       )}
@@ -393,6 +418,24 @@ const ChatSection: React.FC<ChatSectionProps> = ({ currentUserId, onlineUserIds,
                 ))}
                 <div ref={messagesEndRef} />
               </div>
+
+              {replyingToMessage && (
+                <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-slate-700">
+                    <div className="w-1 h-8 bg-indigo-500 rounded-full"></div>
+                    <div>
+                      <p className="font-bold text-[10px] text-indigo-600">Replying to message</p>
+                      <p className="truncate max-w-[200px] text-slate-500">{replyingToMessage.text || 'Attachment'}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setReplyingToMessage(null)}
+                    className="p-1 text-slate-400 hover:text-rose-500 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
 
               {attachmentFile && (
                 <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between">

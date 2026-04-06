@@ -646,18 +646,18 @@ app.post("/api/messages/read", requireAuth, (req: any, res) => {
 });
 
 app.post("/api/messages", requireAuth, (req: any, res) => {
-  const { receiverId, text, attachmentUrl, attachmentName, attachmentType } = req.body;
+  const { receiverId, text, attachmentUrl, attachmentName, attachmentType, replyToId } = req.body;
   const senderId = req.user!.id;
   const senderName = req.user!.name;
   const id = Math.random().toString(36).substr(2, 9);
   const timestamp = new Date().toISOString();
   
   db.prepare(`
-    INSERT INTO messages (id, senderId, receiverId, text, timestamp, read, attachmentUrl, attachmentName, attachmentType)
-    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
-  `).run(id, senderId, receiverId, text, timestamp, attachmentUrl || null, attachmentName || null, attachmentType || null);
+    INSERT INTO messages (id, senderId, receiverId, text, timestamp, read, attachmentUrl, attachmentName, attachmentType, replyToId)
+    VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+  `).run(id, senderId, receiverId, text, timestamp, attachmentUrl || null, attachmentName || null, attachmentType || null, replyToId || null);
   
-  const message = { id, senderId, receiverId, text, timestamp, read: 0, senderName, attachmentUrl, attachmentName, attachmentType };
+  const message = { id, senderId, receiverId, text, timestamp, read: 0, senderName, attachmentUrl, attachmentName, attachmentType, replyToId };
   
   // Notify both sender and receiver via socket rooms (supports multiple tabs)
   io.to(String(senderId)).emit("message:new", message);

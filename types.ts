@@ -115,6 +115,7 @@ export interface ChatMessage {
   attachmentUrl?: string;
   attachmentName?: string;
   attachmentType?: 'image' | 'document' | 'other';
+  replyToId?: string;
 }
 
 export interface ChatRoom {

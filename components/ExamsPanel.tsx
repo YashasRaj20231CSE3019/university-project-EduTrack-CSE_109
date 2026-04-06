@@ -276,16 +276,16 @@ export const ExamsPanel: React.FC<ExamsPanelProps> = ({ user, students = [] }) =
         </div>
         
         {user.role === 'student' && (
-          <div className="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex w-full md:w-auto bg-white p-1 rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
             <button 
               onClick={() => setActiveTab('results')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'results' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'results' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Results
             </button>
             <button 
               onClick={() => setActiveTab('hall-ticket')}
-              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === 'hall-ticket' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500 hover:text-slate-900'}`}
+              className={`flex-1 md:flex-none px-4 md:px-6 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'hall-ticket' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'text-slate-500 hover:text-slate-900'}`}
             >
               Hall Ticket
             </button>

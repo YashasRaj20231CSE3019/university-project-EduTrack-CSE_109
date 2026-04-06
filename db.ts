@@ -96,7 +96,8 @@ export function initDb() {
       read INTEGER DEFAULT 0,
       attachmentUrl TEXT,
       attachmentName TEXT,
-      attachmentType TEXT
+      attachmentType TEXT,
+      replyToId TEXT
     );
   `);
 
@@ -130,6 +131,11 @@ export function initDb() {
   }
   try {
     db.exec("ALTER TABLE messages ADD COLUMN attachmentType TEXT;");
+  } catch (e) {
+    // Column might already exist
+  }
+  try {
+    db.exec("ALTER TABLE messages ADD COLUMN replyToId TEXT;");
   } catch (e) {
     // Column might already exist
   }

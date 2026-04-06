@@ -240,10 +240,10 @@ export const apiService = {
     return res.json();
   },
 
-  async sendMessage(receiverId: string, text: string, attachmentUrl?: string, attachmentName?: string, attachmentType?: string): Promise<any> {
+  async sendMessage(receiverId: string, text: string, attachmentUrl?: string, attachmentName?: string, attachmentType?: string, replyToId?: string): Promise<any> {
     const res = await this.apiFetch('/messages', {
       method: 'POST',
-      body: JSON.stringify({ receiverId, text, attachmentUrl, attachmentName, attachmentType })
+      body: JSON.stringify({ receiverId, text, attachmentUrl, attachmentName, attachmentType, replyToId })
     });
     return res.json();
   },
