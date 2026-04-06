@@ -235,6 +235,13 @@ export const apiService = {
     });
   },
 
+  async updateProfile(updates: { name?: string; email?: string; password?: string }): Promise<void> {
+    await this.apiFetch('/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(updates)
+    });
+  },
+
   async getMessages(otherUserId: string): Promise<any[]> {
     const res = await this.apiFetch(`/messages/${otherUserId}`);
     return res.json();

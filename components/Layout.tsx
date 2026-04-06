@@ -64,6 +64,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/parents', label: 'Parent Portal', icon: UsersRound, color: 'text-teal-500', keywords: ['contacts', 'family', 'communication'] },
     { id: '/quizzes', label: 'Quizzes', icon: BookOpen, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
     { id: '/exams', label: 'Exams', icon: FileText, color: 'text-indigo-600', keywords: ['results', 'marks', 'hall ticket', 'midterm', 'endterm'] },
+    { id: '/payments', label: 'Payments', icon: CheckCircle2, color: 'text-emerald-600', keywords: ['fees', 'dues', 'paid', 'transactions'] },
   ];
 
   const studentNavItems = [
@@ -75,6 +76,7 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/announcements', label: 'Announcements', icon: Megaphone, color: 'text-purple-500', keywords: ['news', 'updates', 'messages'] },
     { id: '/quizzes', label: 'My Quizzes', icon: ClipboardCheck, color: 'text-cyan-500', keywords: ['test', 'exam', 'assessment', 'weekly'] },
     { id: '/exams', label: 'Exams', icon: FileText, color: 'text-indigo-600', keywords: ['results', 'marks', 'hall ticket', 'midterm', 'endterm'] },
+    { id: '/payments', label: 'Payments', icon: CheckCircle2, color: 'text-emerald-600', keywords: ['fees', 'dues', 'pay', 'transactions'] },
   ];
 
   const navItems = user.role === 'teacher' ? teacherNavItems : studentNavItems;
@@ -173,9 +175,15 @@ const Layout: React.FC<LayoutProps> = ({
         </nav>
 
         <div className="px-6 py-6 border-t border-slate-100 mt-auto bg-slate-50/50">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              navigate('/profile');
+              setIsSidebarOpen(false);
+            }}
+            className="flex items-center gap-3 w-full text-left hover:bg-slate-100/50 p-2 -m-2 rounded-xl transition-colors"
+          >
             <div className="relative">
-              <img src={user.avatar} className="w-10 h-10 rounded-xl border-2 border-white shadow-md bg-white" alt={user.name} />
+              <img src={user.avatar} className="w-10 h-10 rounded-xl border-2 border-white shadow-md bg-white object-cover" alt={user.name} />
               <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
             <div className="overflow-hidden">
@@ -184,7 +192,7 @@ const Layout: React.FC<LayoutProps> = ({
                 {user.role === 'teacher' ? 'Class 9A Head' : `Student • ${user.studentData?.grade || 'N/A'}`}
               </p>
             </div>
-          </div>
+          </button>
         </div>
       </aside>
 

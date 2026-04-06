@@ -370,6 +370,7 @@ const App: React.FC = () => {
               onUpdateAssignment={handleUpdateAssignment}
               onUpdateStudent={handleUpdateStudent}
               onEnrollStudent={handleEnrollStudent}
+              onUpdateUser={setCurrentUser}
               fetchData={fetchData}
             />
           ) : (
@@ -383,6 +384,7 @@ const App: React.FC = () => {
               socket={socketRef.current}
               onUpdateAssignment={handleUpdateAssignment}
               onUpdateStudent={handleUpdateStudent}
+              onUpdateUser={setCurrentUser}
             />
           )}
         </motion.div>
@@ -394,6 +396,8 @@ const App: React.FC = () => {
 import { TeacherQuizzes } from './components/TeacherQuizzes';
 import { QuizTaker } from './components/QuizTaker';
 import { ExamsPanel } from './components/ExamsPanel';
+import { ProfileView } from './components/ProfileView';
+import { PaymentsPanel } from './components/PaymentsPanel';
 
 const TeacherRoutes: React.FC<{
   students: Student[];
@@ -409,8 +413,9 @@ const TeacherRoutes: React.FC<{
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
   onUpdateStudent: (updatedStudent: Student) => Promise<void>;
   onEnrollStudent: (studentData: Partial<Student>) => Promise<void>;
+  onUpdateUser: (updatedUser: User) => void;
   fetchData: () => Promise<void>;
-}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, onEnrollStudent, fetchData }) => (
+}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, onEnrollStudent, onUpdateUser, fetchData }) => (
   <Routes>
     <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} schedule={schedule} />} />
     <Route path="/attendance" element={<AttendanceSheet students={students} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
@@ -434,6 +439,8 @@ const TeacherRoutes: React.FC<{
     <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
     <Route path="/quizzes" element={<TeacherQuizzes />} />
     <Route path="/exams" element={<ExamsPanel user={currentUser} students={students} />} />
+    <Route path="/profile" element={<ProfileView user={currentUser} onUpdateUser={onUpdateUser} />} />
+    <Route path="/payments" element={<PaymentsPanel user={currentUser} students={students} />} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
@@ -448,7 +455,8 @@ const StudentRoutes: React.FC<{
   socket: Socket | null;
   onUpdateAssignment: (sId: string, aId: string, updates: Partial<Assignment>) => Promise<void>;
   onUpdateStudent: (updatedStudent: Student) => Promise<void>;
-}> = ({ student, attendance, schedule, activities, currentUser, onlineUserIds, socket, onUpdateAssignment, onUpdateStudent }) => {
+  onUpdateUser: (updatedUser: User) => void;
+}> = ({ student, attendance, schedule, activities, currentUser, onlineUserIds, socket, onUpdateAssignment, onUpdateStudent, onUpdateUser }) => {
   const navigate = useNavigate();
   
   if (!student) {
@@ -486,6 +494,8 @@ const StudentRoutes: React.FC<{
       <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
       <Route path="/quizzes" element={<QuizTaker student={student} />} />
       <Route path="/exams" element={<ExamsPanel user={currentUser} students={[student]} />} />
+      <Route path="/profile" element={<ProfileView user={currentUser} onUpdateUser={onUpdateUser} />} />
+      <Route path="/payments" element={<PaymentsPanel user={currentUser} students={[student]} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

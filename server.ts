@@ -645,6 +645,23 @@ app.post("/api/messages/read", requireAuth, (req: any, res) => {
   res.json({ success: true });
 });
 
+app.patch("/api/profile", requireAuth, (req: any, res) => {
+  const { name, email, password } = req.body;
+  const userId = req.user!.id;
+  
+  if (name) {
+    db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, userId);
+  }
+  if (email) {
+    db.prepare('UPDATE users SET email = ? WHERE id = ?').run(email, userId);
+  }
+  if (password) {
+    db.prepare('UPDATE users SET password = ? WHERE id = ?').run(password, userId);
+  }
+  
+  res.json({ success: true });
+});
+
 app.post("/api/messages", requireAuth, (req: any, res) => {
   const { receiverId, text, attachmentUrl, attachmentName, attachmentType, replyToId } = req.body;
   const senderId = req.user!.id;
