@@ -18,7 +18,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
   const fillDemoAccount = (demoEmail: string, role: Role) => {
     setEmail(demoEmail);
-    setPassword('password'); // Password is required in UI but not validated in mock backend
+    setPassword('yashas1234'); // Password is required in UI but not validated in mock backend
     setSelectedRole(role);
     setError(null);
   };
