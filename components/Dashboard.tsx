@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Markdown from 'react-markdown';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Student, AttendanceRecord, Activity, ScheduleEntry } from '../types';
 import { generateWeeklyReport } from '../services/aiService';
 import { 
@@ -17,7 +17,12 @@ import {
   Book,
   Sparkles,
   Check,
-  X
+  X,
+  UserPlus,
+  PlusCircle,
+  FileText,
+  Settings,
+  Zap
 } from 'lucide-react';
 
 interface DashboardProps {
@@ -60,78 +65,141 @@ const Dashboard: React.FC<DashboardProps> = ({ students, attendance, activities,
   ];
 
   const stats = [
-    { label: 'Enrolled Students', value: students.length, color: 'indigo', icon: <Users className="w-6 h-6" />, trend: '+2%' },
-    { label: 'Avg. Attendance', value: `${attendanceRate}%`, color: 'green', icon: <TrendingUp className="w-6 h-6" />, trend: '+1.5%' },
-    { label: 'Active Activities', value: activities.filter(a => a.status === 'planned').length, color: 'amber', icon: <Clock className="w-6 h-6" />, trend: 'Stable' },
-    { label: 'Completed Tasks', value: activities.filter(a => a.status === 'completed').length, color: 'indigo', icon: <Trophy className="w-6 h-6" />, trend: '8 today' },
+    { 
+      label: 'Enrolled Students', 
+      value: students.length, 
+      color: 'indigo', 
+      icon: <Users className="w-5 h-5" />, 
+      trend: '+2%',
+      data: [{v: 40}, {v: 42}, {v: 41}, {v: 45}, {v: 46}, {v: 48}, {v: students.length}]
+    },
+    { 
+      label: 'Avg. Attendance', 
+      value: `${attendanceRate}%`, 
+      color: 'green', 
+      icon: <TrendingUp className="w-5 h-5" />, 
+      trend: '+1.5%',
+      data: [{v: 88}, {v: 90}, {v: 85}, {v: 92}, {v: 89}, {v: 94}, {v: attendanceRate}]
+    },
+    { 
+      label: 'Active Activities', 
+      value: activities.filter(a => a.status === 'planned').length, 
+      color: 'amber', 
+      icon: <Clock className="w-5 h-5" />, 
+      trend: 'Stable',
+      data: [{v: 5}, {v: 6}, {v: 4}, {v: 5}, {v: 7}, {v: 6}, {v: activities.filter(a => a.status === 'planned').length}]
+    },
+    { 
+      label: 'Completed Tasks', 
+      value: activities.filter(a => a.status === 'completed').length, 
+      color: 'indigo', 
+      icon: <Trophy className="w-5 h-5" />, 
+      trend: '8 today',
+      data: [{v: 10}, {v: 15}, {v: 12}, {v: 18}, {v: 22}, {v: 25}, {v: activities.filter(a => a.status === 'completed').length}]
+    },
+  ];
+
+  const quickActions = [
+    { label: 'Weekly Report', icon: <FileText className="w-4 h-4" />, action: handleGenerateReport, color: 'bg-indigo-600', textColor: 'text-white' },
+    { label: 'View Calendar', icon: <CalendarDays className="w-4 h-4" />, action: () => setShowCalendar(true), color: 'bg-white', textColor: 'text-slate-700' },
+    { label: 'Enroll Student', icon: <UserPlus className="w-4 h-4" />, action: () => navigate('/students'), color: 'bg-white', textColor: 'text-slate-700' },
+    { label: 'New Activity', icon: <PlusCircle className="w-4 h-4" />, action: () => navigate('/planner'), color: 'bg-white', textColor: 'text-slate-700' },
+    { label: 'Settings', icon: <Settings className="w-4 h-4" />, action: () => navigate('/profile'), color: 'bg-white', textColor: 'text-slate-700' },
   ];
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Hero Section */}
-      <div className="bg-indigo-600 rounded-3xl p-8 md:p-12 border border-indigo-500 flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-xl text-white">
+      <div className="bg-slate-900 rounded-[2.5rem] p-8 md:p-12 border border-slate-800 flex flex-col md:flex-row justify-between items-center relative overflow-hidden shadow-2xl text-white">
         <div className="relative z-10 max-w-lg text-center md:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest mb-6">
-            <Sparkles className="w-3 h-3 text-indigo-200" /> Classroom Insights
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-6">
+            <Sparkles className="w-3 h-3" /> System Intelligence Active
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
-            Welcome back, Dr. Sharma!
+          <h1 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tighter leading-tight">
+            Hello, <span className="text-indigo-400">Acharya</span>.
           </h1>
-          <p className="text-indigo-100 text-sm md:text-base mb-8 leading-relaxed font-medium">Your classroom is performing 12% better than the school average this week. Keep it up!</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-            <button 
-              onClick={handleGenerateReport}
-              disabled={isGeneratingReport}
-              className="px-6 py-2.5 bg-white text-indigo-600 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-indigo-50 transition-all active:scale-95 shadow-sm flex items-center justify-center gap-2"
-            >
-              {isGeneratingReport ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></span>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <LayoutDashboard className="w-3.5 h-3.5" /> Generate Weekly Report
-                </>
-              )}
-            </button>
-            <button 
-              onClick={() => setShowCalendar(true)}
-              className="px-6 py-2.5 bg-indigo-500/20 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg border border-white/20 hover:bg-indigo-500/30 transition-all active:scale-95 flex items-center justify-center gap-2"
-            >
-              <CalendarDays className="w-3.5 h-3.5" /> View Calendar
-            </button>
-          </div>
+          <p className="text-slate-400 text-sm md:text-base mb-0 leading-relaxed font-bold italic">"Education is the most powerful weapon which you can use to change the world."</p>
         </div>
         <div className="hidden lg:block relative z-10">
-          <div className="w-44 h-44 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-inner">
+          <div className="w-48 h-48 bg-white/5 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/10 shadow-inner group transition-transform hover:scale-105 duration-500">
              <div className="text-center">
-                <p className="text-4xl font-bold text-white tracking-tight">{attendanceRate}%</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Present Today</p>
+                <p className="text-5xl font-black text-white tracking-tighter mb-1">{attendanceRate}%</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Present Today</p>
              </div>
           </div>
         </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
       </div>
 
-      {/* Metrics */}
+      {/* Metrics with Sparklines */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-            <div className="flex items-center justify-between mb-4">
-              <span className="p-2.5 bg-slate-50 text-slate-600 rounded-lg group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                <div className="w-5 h-5 flex items-center justify-center">
+          <div key={i} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500 group relative overflow-hidden">
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-6">
+                <span className="p-3 bg-slate-50 text-slate-800 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-sm">
                   {stat.icon}
+                </span>
+                <div className="flex flex-col items-end">
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest ${stat.trend.startsWith('+') ? 'text-green-600 bg-green-50' : 'text-slate-400 bg-slate-50'}`}>
+                    {stat.trend}
+                  </span>
                 </div>
-              </span>
-              <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-widest ${stat.trend.startsWith('+') ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
-                {stat.trend}
-              </span>
+              </div>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1 ml-1">{stat.label}</p>
+              <h4 className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</h4>
             </div>
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
+            
+            {/* Sparkline */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-60 transition-opacity duration-500">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={stat.data}>
+                  <defs>
+                    <linearGradient id={`color-${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={stat.color === 'green' ? '#10b981' : '#4f46e5'} stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor={stat.color === 'green' ? '#10b981' : '#4f46e5'} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Area 
+                    type="monotone" 
+                    dataKey="v" 
+                    stroke={stat.color === 'green' ? '#10b981' : '#4f46e5'} 
+                    strokeWidth={2} 
+                    fill={`url(#color-${i})`} 
+                    isAnimationActive={true}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         ))}
+      </div>
+
+      {/* Quick Actions Panel */}
+      <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+        <div className="relative z-10">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <Zap className="w-3.5 h-3.5 text-amber-500" /> Command Centre
+          </h3>
+          <div className="flex flex-wrap gap-4">
+            {quickActions.map((action, i) => (
+              <button
+                key={i}
+                onClick={action.action}
+                disabled={action.label === 'Weekly Report' && isGeneratingReport}
+                className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-sm border ${
+                  action.color.includes('bg-white') ? 'bg-white border-slate-200 shadow-slate-200/50' : `${action.color} border-transparent shadow-indigo-200`
+                } ${action.textColor}`}
+              >
+                {action.label === 'Weekly Report' && isGeneratingReport ? (
+                  <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : action.icon}
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
