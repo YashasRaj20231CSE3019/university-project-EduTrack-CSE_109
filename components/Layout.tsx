@@ -57,6 +57,7 @@ const Layout: React.FC<LayoutProps> = ({
   const teacherNavItems = [
     { id: '/', label: 'Overview', icon: LayoutDashboard, color: 'text-indigo-500', keywords: ['dashboard', 'home', 'main'] },
     { id: '/attendance', label: 'Attendance', icon: ClipboardCheck, color: 'text-emerald-500', keywords: ['roll', 'present', 'absent'] },
+    { id: '/grading', label: 'Grading Centre', icon: ClipboardCheck, color: 'text-orange-500', keywords: ['marks', 'evaluation', 'results', 'assignments'] },
     { id: '/students', label: 'Students', icon: Users, color: 'text-blue-500', keywords: ['directory', 'list', 'profiles'] },
     { id: '/planner', label: 'Lesson Planner', icon: Wand2, color: 'text-purple-500', keywords: ['ai', 'generate', 'activities'] },
     { id: '/schedule', label: 'Class Schedule', icon: CalendarDays, color: 'text-amber-500', keywords: ['timetable', 'calendar', 'classes'] },
@@ -67,8 +68,13 @@ const Layout: React.FC<LayoutProps> = ({
     { id: '/payments', label: 'Payments', icon: CheckCircle2, color: 'text-emerald-600', keywords: ['fees', 'dues', 'paid', 'transactions'] },
   ];
 
+  if (user.role === 'teacher' && user.email === 'yashasrajvideos@gmail.com') {
+    teacherNavItems.push({ id: '/requests', label: 'Schedule Requests', icon: CalendarDays, color: 'text-rose-600', keywords: ['timetable', 'approval', 'changes'] });
+  }
+
   const studentNavItems = [
     { id: '/', label: 'My Dashboard', icon: Home, color: 'text-indigo-500', keywords: ['home', 'main', 'overview'] },
+    { id: '/attendance', label: 'My Attendance', icon: ClipboardCheck, color: 'text-emerald-500', keywords: ['roll', 'present', 'absent', 'percentage'] },
     { id: '/lesson-planner', label: 'Activity Planner', icon: BookOpen, color: 'text-emerald-500', keywords: ['activities', 'tasks'] },
     { id: '/schedule', label: 'My Schedule', icon: CalendarDays, color: 'text-amber-500', keywords: ['timetable', 'calendar', 'classes'] },
     { id: '/assignments', label: 'Assignments', icon: Library, color: 'text-rose-500', keywords: ['homework', 'tasks', 'projects'] },

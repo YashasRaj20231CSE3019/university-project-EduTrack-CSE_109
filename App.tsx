@@ -72,7 +72,11 @@ const App: React.FC = () => {
         });
       }
     } catch (err) {
-      console.error('Failed to fetch initial notifications:', err);
+      if (err instanceof Error && err.message === 'Unauthorized') {
+        // App will redirect to login via apiFetch, so suppress the console error
+      } else {
+        console.error('Failed to fetch initial notifications:', err instanceof Error ? err.message : err);
+      }
     }
   };
 
@@ -224,16 +228,8 @@ const App: React.FC = () => {
 
   const handleSaveAttendance = async (record: AttendanceRecord) => {
     try {
-      await apiService.markAttendance(record.date, record.presentStudentIds);
-      setAttendance(prev => {
-        const existingIdx = prev.findIndex(a => a.date === record.date);
-        if (existingIdx >= 0) {
-          const newAttendance = [...prev];
-          newAttendance[existingIdx] = record;
-          return newAttendance;
-        }
-        return [...prev, record];
-      });
+      await apiService.markAttendance(record.date, record.presentStudentIds, record.subject || 'General', record.grade || 'all');
+      await fetchData();
     } catch (error) {
       console.error('Error saving attendance:', error);
     }
@@ -372,6 +368,7 @@ const App: React.FC = () => {
               onEnrollStudent={handleEnrollStudent}
               onUpdateUser={setCurrentUser}
               fetchData={fetchData}
+              loading={loading}
             />
           ) : (
             <StudentRoutes 
@@ -398,6 +395,11 @@ import { QuizTaker } from './components/QuizTaker';
 import { ExamsPanel } from './components/ExamsPanel';
 import { ProfileView } from './components/ProfileView';
 import { PaymentsPanel } from './components/PaymentsPanel';
+import { StudentAttendance } from './components/StudentAttendance';
+import GradingCentre from './components/GradingCentre';
+
+import AdminRequestsPanel from './components/AdminRequestsPanel';
+import ScheduleRequestModal from './components/ScheduleRequestModal';
 
 const TeacherRoutes: React.FC<{
   students: Student[];
@@ -415,12 +417,24 @@ const TeacherRoutes: React.FC<{
   onEnrollStudent: (studentData: Partial<Student>) => Promise<void>;
   onUpdateUser: (updatedUser: User) => void;
   fetchData: () => Promise<void>;
-}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, onEnrollStudent, onUpdateUser, fetchData }) => (
+  loading: boolean;
+}> = ({ students, attendance, activities, schedule, currentUser, onlineUserIds, socket, onSaveAttendance, onAddActivity, onUpdateActivity, onUpdateAssignment, onUpdateStudent, onEnrollStudent, onUpdateUser, fetchData, loading }) => (
   <Routes>
     <Route path="/" element={<Dashboard students={students} attendance={attendance} activities={activities} schedule={schedule} />} />
-    <Route path="/attendance" element={<AttendanceSheet students={students} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
-    <Route path="/schedule" element={<ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" />} />
-    <Route path="/students" element={<StudentDirectory students={students} onEnrollStudent={onEnrollStudent} />} />
+    <Route path="/attendance" element={<AttendanceSheet students={students} attendance={attendance} onSave={onSaveAttendance} user={currentUser} onAttendanceImported={fetchData} />} />
+    <Route path="/grading" element={
+      <GradingCentre 
+        students={students}
+        onUpdateAssignment={async (id, updates) => {
+          const student = students.find(s => s.assignments.some(a => a.id === id));
+          if (student) {
+            await onUpdateAssignment(student.id, id, updates);
+          }
+        }}
+      />
+    } />
+    <Route path="/schedule" element={<ScheduleView schedule={schedule} title="Class 9A Weekly Schedule" isTeacher={currentUser.role === 'teacher'} />} />
+    <Route path="/students" element={<StudentDirectory students={students} attendance={attendance} onEnrollStudent={onEnrollStudent} />} />
     <Route path="/students/:id" element={
       <StudentDetailsWrapper 
         students={students} 
@@ -431,10 +445,12 @@ const TeacherRoutes: React.FC<{
         currentUser={currentUser}
         onlineUserIds={onlineUserIds}
         socket={socket}
+        loading={loading}
       />
     } />
     <Route path="/planner" element={<ActivityPlanner activities={activities} onAddActivity={onAddActivity} onUpdateActivity={onUpdateActivity} />} />
     <Route path="/announcements" element={<AnnouncementsPanel userRole={currentUser.role} />} />
+    <Route path="/requests" element={<AdminRequestsPanel />} />
     <Route path="/parents" element={<ParentPortal />} />
     <Route path="/messages" element={<MessagesWrapper currentUser={currentUser} onlineUserIds={onlineUserIds} socket={socket} />} />
     <Route path="/quizzes" element={<TeacherQuizzes />} />
@@ -477,6 +493,7 @@ const StudentRoutes: React.FC<{
         />
       } />
       <Route path="/schedule" element={<ScheduleView schedule={schedule} title="My Timetable" />} />
+      <Route path="/attendance" element={<StudentAttendance student={student} attendanceHistory={attendance} />} />
       <Route path="/assignments" element={<AssignmentsView student={student} onUpdateAssignment={(aId, updates) => onUpdateAssignment(student.id, aId, updates)} />} />
       <Route path="/lesson-planner" element={<LessonPlanner student={student} activities={activities} />} />
       <Route path="/my-progress" element={
@@ -537,10 +554,19 @@ const StudentDetailsWrapper: React.FC<{
   currentUser: User;
   onlineUserIds: string[];
   socket: Socket | null;
-}> = ({ students, attendance, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser, onlineUserIds, socket }) => {
+  loading: boolean;
+}> = ({ students, attendance, onUpdateAssignment, onUpdateStudent, isTeacherView, currentUser, onlineUserIds, socket, loading }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const student = students.find(s => s.id === id);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="w-10 h-10 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!student) {
     return <Navigate to="/students" replace />;

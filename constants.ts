@@ -109,6 +109,7 @@ export const INITIAL_STUDENTS: Student[] = generateStudents(105);
 const generateAttendanceHistory = (students: Student[]): AttendanceRecord[] => {
   const records: AttendanceRecord[] = [];
   const today = new Date();
+  const subjects = ['Mathematics', 'Science', 'English', 'History', 'Art', 'Computer Science'];
   
   // Last 14 days
   for (let i = 14; i >= 0; i--) {
@@ -119,14 +120,20 @@ const generateAttendanceHistory = (students: Student[]): AttendanceRecord[] => {
     const day = date.getDay();
     if (day === 0 || day === 6) continue;
 
-    const presentIds = students
-      .filter(() => Math.random() > 0.08) // 92% average attendance
-      .map(s => s.id);
+    const normalizedDate = date.toISOString().split('T')[0];
 
-    records.push({
-      date: date.toISOString(),
-      presentStudentIds: presentIds
-    });
+    // For each subject, generate attendance
+    for (const subject of subjects) {
+      const presentIds = students
+        .filter(() => Math.random() > 0.08) // 92% average attendance
+        .map(s => s.id);
+
+      records.push({
+        date: normalizedDate,
+        subject,
+        presentStudentIds: presentIds
+      });
+    }
   }
   return records;
 };

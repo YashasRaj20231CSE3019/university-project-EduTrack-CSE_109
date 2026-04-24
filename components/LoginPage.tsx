@@ -16,6 +16,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const fillDemoAccount = (demoEmail: string, role: Role) => {
+    setEmail(demoEmail);
+    setPassword('password'); // Password is required in UI but not validated in mock backend
+    setSelectedRole(role);
+    setError(null);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -211,11 +218,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
             <div className="pt-6 text-center">
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                Demo Accounts
+                Demo Accounts (Click to Fill)
               </p>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
-                <span className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold">sharma@school.edu</span>
-                <span className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold">aarav.sharma1@school.edu</span>
+                <span 
+                  onClick={() => fillDemoAccount('sharma@school.edu', 'teacher')}
+                  className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold cursor-pointer hover:bg-indigo-600 hover:text-white transition-all transform hover:scale-105 active:scale-95"
+                >
+                  sharma@school.edu
+                </span>
+                <span 
+                  onClick={() => fillDemoAccount('aarav.sharma1@school.edu', 'student')}
+                  className="px-3 py-1 bg-slate-100 lg:bg-slate-200 text-slate-500 lg:text-slate-600 rounded-full text-[8px] font-bold cursor-pointer hover:bg-indigo-600 hover:text-white transition-all transform hover:scale-105 active:scale-95"
+                >
+                  aarav.sharma1@school.edu
+                </span>
               </div>
             </div>
           </form>

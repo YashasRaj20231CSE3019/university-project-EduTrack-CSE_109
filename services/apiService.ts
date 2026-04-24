@@ -1,5 +1,5 @@
 
-import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment, Announcement, ParentMessage } from '../types';
+import { Student, AttendanceRecord, ScheduleEntry, Activity, Assignment, Announcement, ParentMessage, ScheduleRequest } from '../types';
 
 const API_BASE = '/api';
 
@@ -89,10 +89,10 @@ export const apiService = {
     return res.json();
   },
 
-  async markAttendance(date: string, presentStudentIds: string[]): Promise<void> {
+  async markAttendance(date: string, presentStudentIds: string[], subject?: string, grade?: string): Promise<void> {
     await this.apiFetch('/attendance', {
       method: 'POST',
-      body: JSON.stringify({ date, presentStudentIds })
+      body: JSON.stringify({ date, presentStudentIds, subject, grade })
     });
   },
 
@@ -154,10 +154,10 @@ export const apiService = {
     return data.token;
   },
 
-  async verifyQR(token: string, teacherId: string): Promise<any> {
+  async verifyQR(token: string, teacherId: string, subject?: string): Promise<any> {
     const res = await this.apiFetch('/qr/verify', {
       method: 'POST',
-      body: JSON.stringify({ token, teacherId })
+      body: JSON.stringify({ token, teacherId, subject })
     });
     return res.json();
   },
@@ -299,6 +299,25 @@ export const apiService = {
   async deleteMessage(id: string): Promise<void> {
     await this.apiFetch(`/messages/${id}`, {
       method: 'DELETE'
+    });
+  },
+
+  async getScheduleRequests(): Promise<ScheduleRequest[]> {
+    const res = await this.apiFetch('/schedule-requests');
+    return res.json();
+  },
+
+  async createScheduleRequest(request: Partial<ScheduleRequest>): Promise<void> {
+    await this.apiFetch('/schedule-requests', {
+      method: 'POST',
+      body: JSON.stringify(request)
+    });
+  },
+
+  async updateScheduleRequest(id: string, status: string, adminComment?: string): Promise<void> {
+    await this.apiFetch(`/schedule-requests/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, adminComment })
     });
   }
 };

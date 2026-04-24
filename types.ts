@@ -41,6 +41,8 @@ export interface Student {
 
 export interface AttendanceRecord {
   date: string; // ISO date string
+  subject: string; // The subject name
+  grade?: string; // The grade/section name
   presentStudentIds: string[];
 }
 
@@ -93,6 +95,27 @@ export interface Announcement {
   authorName: string;
   priority: 'normal' | 'high' | 'urgent';
   targetRole: 'all' | 'teacher' | 'student';
+  attachmentUrl?: string;
+  attachmentName?: string;
+}
+
+export interface ScheduleRequest {
+  id: string;
+  teacherId: string;
+  teacherName: string;
+  title: string;
+  description: string;
+  status: 'pending' | 'approved' | 'rejected';
+  adminComment?: string;
+  createdAt: string;
+  details: {
+    day?: string;
+    startTime?: string;
+    endTime?: string;
+    subject?: string;
+    action?: 'add' | 'replace' | 'move' | 'delete';
+    targetScheduleId?: string;
+  };
 }
 
 export interface ParentMessage {

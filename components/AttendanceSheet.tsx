@@ -8,6 +8,7 @@ import { Download, Scan, Zap, Search, Check, Circle } from 'lucide-react';
 
 interface AttendanceSheetProps {
   students: Student[];
+  attendance: AttendanceRecord[];
   onSave: (record: AttendanceRecord) => void;
   user: User;
   onAttendanceImported?: () => void;
@@ -20,20 +21,31 @@ interface CheckInLog {
   time: string;
 }
 
-const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, user, onAttendanceImported }) => {
+const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, attendance, onSave, user, onAttendanceImported }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'present' | 'absent'>('all');
   const [selectedSection, setSelectedSection] = useState<string>('all');
+  const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
   const [showScanner, setShowScanner] = useState(false);
   
+  const today = new Date().toISOString().split('T')[0];
+
   // Real-time features
   const [isLiveSession, setIsLiveSession] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [checkInLog, setCheckInLog] = useState<CheckInLog[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const today = new Date().toISOString().split('T')[0];
+  // Initialize selectedIds from history
+  useEffect(() => {
+    const todayRecord = attendance.find(r => r.date.split('T')[0] === today && r.subject === selectedSubject);
+    if (todayRecord) {
+      setSelectedIds(todayRecord.presentStudentIds);
+    } else {
+      setSelectedIds([]);
+    }
+  }, [selectedSubject, attendance, today]);
 
   const sections = useMemo(() => {
     const uniqueSections = Array.from(new Set(students.map(s => s.grade))).sort();
@@ -106,9 +118,11 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
   const handleSave = () => {
     onSave({
       date: new Date().toISOString(),
+      subject: selectedSubject,
+      grade: selectedSection,
       presentStudentIds: selectedIds
     });
-    alert(`Attendance for ${selectedIds.length} students saved successfully!`);
+    alert(`Attendance for ${selectedSubject} - Section ${selectedSection.toUpperCase()} (${selectedIds.length} students) saved successfully!`);
     setIsLiveSession(false);
     setTimeLeft(600);
   };
@@ -130,6 +144,35 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleQRScan = (studentId: string) => {
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+
+    const isPresent = selectedIds.includes(studentId);
+    if (!isPresent) {
+      // Add to local state
+      const newIds = [...selectedIds, studentId];
+      setSelectedIds(newIds);
+      
+      // Immediate persistence for QR scan as per user request
+      onSave({
+        date: new Date().toISOString(),
+        subject: selectedSubject,
+        grade: student.grade,
+        presentStudentIds: newIds
+      });
+
+      // Log for UI feedback
+      const now = new Date();
+      setCheckInLog(prev => [{
+        id: Math.random().toString(),
+        name: student.name,
+        grade: student.grade,
+        time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      }, ...prev].slice(0, 5));
+    }
   };
 
   return (
@@ -168,22 +211,35 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
       )}
 
       {/* Action Header */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-center gap-6">
-        <div className="text-center lg:text-left">
-          <h3 className="text-xl font-bold text-slate-900 mb-1 tracking-tight">Session Attendance</h3>
-          <p className="text-xs font-medium text-slate-500 flex items-center justify-center lg:justify-start gap-2">
+      <div className="bg-white p-5 md:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-center gap-6">
+        <div className="text-center lg:text-left w-full md:w-auto">
+          <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-1 tracking-tight">Session Attendance</h3>
+          <p className="text-[10px] md:text-xs font-medium text-slate-500 flex items-center justify-center lg:justify-start gap-2">
             {!isLiveSession && <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>}
-            {isLiveSession ? 'Monitoring check-ins...' : `Ready for session ${today}`}
+            {isLiveSession ? 'Monitoring check-ins...' : `Date: ${today}`}
           </p>
         </div>
         
-        <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3">
-          <div className="flex items-center bg-slate-50 rounded-lg p-1 border border-slate-200">
-            <span className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Section:</span>
+        <div className="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full">
+          <div className="flex items-center bg-slate-50 rounded-lg p-1 border border-slate-200 w-full sm:w-auto">
+            <span className="pl-3 text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Subject:</span>
+            <select 
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="bg-transparent border-none outline-none text-[10px] md:text-xs font-bold text-slate-700 pr-4 py-1.5 md:py-1 cursor-pointer flex-1"
+            >
+              {['Mathematics', 'Science', 'English', 'History', 'Art', 'Computer Science', 'Geography', 'Physical Ed'].map(subj => (
+                <option key={subj} value={subj}>{subj}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center bg-slate-50 rounded-lg p-1 border border-slate-200 w-full sm:w-auto">
+            <span className="pl-3 text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Section:</span>
             <select 
               value={selectedSection}
               onChange={(e) => setSelectedSection(e.target.value)}
-              className="bg-transparent border-none outline-none text-xs font-bold text-slate-700 pr-4 py-1 cursor-pointer"
+              className="bg-transparent border-none outline-none text-[10px] md:text-xs font-bold text-slate-700 pr-4 py-1.5 md:py-1 cursor-pointer flex-1"
             >
               {sections.map(sec => (
                 <option key={sec} value={sec}>{sec.toUpperCase()}</option>
@@ -191,56 +247,41 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
             </select>
           </div>
 
-          <button 
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm uppercase tracking-widest"
-          >
-            <Download className="w-3.5 h-3.5" /> Export
-          </button>
-
-          <button 
-            onClick={() => setShowScanner(true)}
-            className="px-4 py-2 bg-green-600 text-white text-[10px] font-bold rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 shadow-sm uppercase tracking-widest"
-          >
-            <Scan className="w-3.5 h-3.5" /> Scan QR
-          </button>
-
-          {!isLiveSession ? (
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
             <button 
-              onClick={() => setIsLiveSession(true)}
-              className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-bold rounded-lg hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm uppercase tracking-widest"
+              onClick={handleExportCSV}
+              className="px-3 py-2 bg-white border border-slate-200 text-slate-700 text-[9px] md:text-[10px] font-bold rounded-lg hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-sm uppercase tracking-widest"
             >
-              <Zap className="w-3.5 h-3.5" /> Start Live
+              <Download className="w-3 h-3 md:w-3.5 md:h-3.5" /> Export
             </button>
-          ) : (
-            <div className="bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
-               <span className="text-indigo-600 font-bold text-[10px] uppercase tracking-widest">Recording...</span>
-            </div>
-          )}
 
-          <div className="h-6 w-[1px] bg-slate-200 mx-2 hidden lg:block"></div>
-          
-          <div className="bg-slate-50 rounded-lg p-1 flex items-center border border-slate-200">
             <button 
-              onClick={() => setFilter('all')}
-              className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${filter === 'all' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+              onClick={() => setShowScanner(true)}
+              className="px-3 py-2 bg-green-600 text-white text-[9px] md:text-[10px] font-bold rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-sm uppercase tracking-widest"
             >
-              ALL
+              <Scan className="w-3 h-3 md:w-3.5 md:h-3.5" /> Scan QR
             </button>
+
+            {!isLiveSession ? (
+              <button 
+                onClick={() => setIsLiveSession(true)}
+                className="px-3 py-2 bg-indigo-600 text-white text-[9px] md:text-[10px] font-bold rounded-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-sm uppercase tracking-widest"
+              >
+                <Zap className="w-3 h-3 md:w-3.5 md:h-3.5" /> Start Live
+              </button>
+            ) : (
+              <div className="bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100 flex items-center justify-center">
+                 <span className="text-indigo-600 font-bold text-[9px] md:text-[10px] uppercase tracking-widest">Live...</span>
+              </div>
+            )}
+            
             <button 
-              onClick={() => setFilter('present')}
-              className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${filter === 'present' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+              onClick={handleSave}
+              className="px-3 py-2 bg-indigo-600 text-white text-[9px] md:text-[10px] font-bold rounded-lg shadow-sm hover:bg-indigo-700 transition-all active:scale-95 uppercase tracking-widest col-span-2 sm:col-auto"
             >
-              PRESENT ({selectedIds.length})
+              Save Changes
             </button>
           </div>
-          
-          <button 
-            onClick={handleSave}
-            className="px-6 py-2 bg-indigo-600 text-white text-[10px] font-bold rounded-lg shadow-sm hover:bg-indigo-700 transition-all active:scale-95 uppercase tracking-widest"
-          >
-            Save Changes
-          </button>
         </div>
       </div>
 
@@ -285,7 +326,7 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
           )}
 
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:flex-1">
                 <div className="relative w-full max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -294,34 +335,38 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
                     placeholder="Search students..." 
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-11 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:outline-none transition-all shadow-sm"
+                    className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 focus:outline-none transition-all shadow-sm"
                   />
                 </div>
                 {selectedSection !== 'all' && (
                   <button 
                     onClick={() => setSelectedSection('all')}
-                    className="w-full sm:w-auto px-3 py-1.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-200 hover:bg-slate-200 transition-all uppercase tracking-widest"
+                    className="w-full sm:w-auto px-3 py-2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg border border-slate-200 hover:bg-slate-200 transition-all uppercase tracking-widest"
                   >
-                    Clear Section: {selectedSection}
+                    Clear Filter
                   </button>
                 )}
               </div>
-              <button 
-                onClick={handleSelectAll}
-                className="text-slate-400 font-bold text-[10px] hover:text-slate-900 uppercase tracking-widest transition-colors"
-              >
-                {currentSectionStudents.every(s => selectedIds.includes(s.id)) ? 'Deselect All' : 'Select All'}
-              </button>
+              <div className="flex justify-between items-center w-full md:w-auto gap-4">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{filteredStudents.length} Students</p>
+                <button 
+                  onClick={handleSelectAll}
+                  className="text-indigo-600 font-bold text-[10px] hover:text-indigo-700 uppercase tracking-widest transition-colors"
+                >
+                  {currentSectionStudents.every(s => selectedIds.includes(s.id)) ? 'Deselect All' : 'Select All'}
+                </button>
+              </div>
             </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left min-w-[600px]">
               <thead>
                 <tr className="bg-slate-50/50">
-                  <th className="px-6 md:px-10 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Presence</th>
+                  <th className="px-10 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Presence</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Class</th>
-                  <th className="px-6 md:px-10 py-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
+                  <th className="px-10 py-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -331,9 +376,9 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
                     <tr 
                       key={student.id} 
                       onClick={() => toggleStudent(student)}
-                      className={`group cursor-pointer hover:bg-slate-50 transition-all duration-200 ${isPresent ? 'bg-green-50/10' : ''}`}
+                      className={`group cursor-pointer hover:bg-slate-50 transition-all duration-200 ${isPresent ? 'bg-indigo-50/10' : ''}`}
                     >
-                      <td className="px-6 md:px-10 py-4">
+                      <td className="px-10 py-4">
                         <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-300 ${
                           isPresent 
                             ? 'bg-indigo-600 border-indigo-600 text-white' 
@@ -356,10 +401,10 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
                           {student.grade}
                         </span>
                       </td>
-                      <td className="px-6 md:px-10 py-4 text-right">
+                      <td className="px-10 py-4 text-right">
                          <button 
                           className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
-                            isPresent ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-slate-100 text-slate-600 group-hover:bg-blue-600 group-hover:text-white'
+                            isPresent ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-slate-100 text-slate-600 group-hover:bg-indigo-600 group-hover:text-white'
                           }`}
                          >
                            {isPresent ? 'Present' : 'Mark'}
@@ -370,6 +415,40 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {filteredStudents.map((student) => {
+              const isPresent = selectedIds.includes(student.id);
+              return (
+                <div 
+                  key={student.id} 
+                  onClick={() => toggleStudent(student)}
+                  className={`p-4 flex items-center justify-between transition-all active:bg-slate-50 ${isPresent ? 'bg-indigo-50/20' : ''}`}
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className={`w-5 h-5 md:w-6 md:h-6 rounded-lg border flex items-center justify-center transition-all shrink-0 ${
+                      isPresent 
+                        ? 'bg-indigo-600 border-indigo-600 text-white' 
+                        : 'border-slate-200 bg-white'
+                    }`}>
+                      {isPresent ? <Check className="w-3 h-3" /> : <div className="w-2 h-2" />}
+                    </div>
+                    <img src={student.avatar} className="w-10 h-10 rounded-xl border border-slate-100 shadow-sm shrink-0" alt="" />
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold text-slate-900 truncate">{student.name}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{student.grade}</p>
+                    </div>
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all shrink-0 border ${
+                    isPresent ? 'bg-green-50 text-green-600 border-green-100' : 'bg-slate-100 text-slate-500 border-transparent'
+                  }`}>
+                    {isPresent ? 'PRESENT' : 'MARK'}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -427,10 +506,8 @@ const AttendanceSheet: React.FC<AttendanceSheetProps> = ({ students, onSave, use
       {showScanner && (
         <QRScanner 
           teacher={user} 
-          onScanSuccess={(studentId) => {
-            const student = students.find(s => s.id === studentId);
-            if (student) toggleStudent(student);
-          }} 
+          subject={selectedSubject}
+          onScanSuccess={handleQRScan} 
           onClose={() => setShowScanner(false)} 
         />
       )}

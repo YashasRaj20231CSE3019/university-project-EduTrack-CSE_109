@@ -1,16 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { ScheduleEntry } from '../types';
-import { Printer, CalendarDays } from 'lucide-react';
+import { Printer, CalendarDays, Edit3 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
+import ScheduleRequestModal from './ScheduleRequestModal';
 
 interface ScheduleViewProps {
   schedule: ScheduleEntry[];
   title?: string;
+  isTeacher?: boolean;
 }
 
-const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Timetable" }) => {
+const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Timetable", isTeacher = false }) => {
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const scheduleRef = useRef<HTMLDivElement>(null);
   
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
@@ -86,8 +89,26 @@ const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, title = "Class Ti
             >
               <Printer className="w-4 h-4" /> PRINT PDF
             </button>
+            
+            {isTeacher && (
+              <button 
+                onClick={() => setIsRequestModalOpen(true)}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-xl text-xs font-black hover:bg-indigo-700 transition-all uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-indigo-100 active:scale-95 w-full sm:w-auto justify-center"
+              >
+                <Edit3 className="w-4 h-4" /> REQUEST CHANGE
+              </button>
+            )}
           </div>
         </div>
+
+        <ScheduleRequestModal 
+          isOpen={isRequestModalOpen}
+          onClose={() => setIsRequestModalOpen(false)}
+          schedule={schedule}
+          onSuccess={() => {
+            alert('Request submitted successfully!');
+          }}
+        />
 
         <div ref={scheduleRef} className="bg-white">
           {viewMode === 'week' ? (

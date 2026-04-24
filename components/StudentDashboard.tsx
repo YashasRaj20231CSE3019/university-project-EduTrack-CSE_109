@@ -66,11 +66,15 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student, attendance
             </button>
           </div>
         </div>
-        <div className="hidden lg:block relative z-10">
-          <div className="w-44 h-44 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-inner">
+        <div 
+          onClick={() => navigate('/attendance')}
+          className="relative z-10 cursor-pointer hover:scale-105 transition-transform"
+        >
+          <div className="w-32 h-32 md:w-44 md:h-44 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-inner group">
              <div className="text-center">
-                <p className="text-4xl font-bold text-white tracking-tight">{attendanceRate}%</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Attendance</p>
+                <p className="text-2xl md:text-4xl font-bold text-white tracking-tight leading-none mb-1">{attendanceRate}%</p>
+                <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-indigo-200">Attendance</p>
+                <p className="text-[8px] font-bold text-white/40 uppercase mt-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity tracking-widest">Detail View</p>
              </div>
           </div>
         </div>

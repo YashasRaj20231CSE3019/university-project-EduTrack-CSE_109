@@ -7,11 +7,12 @@ import { X, Camera, CheckCircle2, XCircle, Zap, ShieldCheck } from 'lucide-react
 
 interface QRScannerProps {
   teacher: User;
+  subject?: string;
   onScanSuccess: (studentId: string) => void;
   onClose: () => void;
 }
 
-const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }) => {
+const QRScanner: React.FC<QRScannerProps> = ({ teacher, subject, onScanSuccess, onClose }) => {
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +62,7 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
     setSuccessMessage(null);
 
     try {
-      const data = await apiService.verifyQR(decodedText, teacher.id);
+      const data = await apiService.verifyQR(decodedText, teacher.id, subject);
 
       if (data.success) {
         setSuccessMessage(data.message || "Attendance marked successfully!");
@@ -153,22 +154,22 @@ const QRScanner: React.FC<QRScannerProps> = ({ teacher, onScanSuccess, onClose }
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-start gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 md:p-6 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-start gap-4">
               <Zap className="w-5 h-5 text-indigo-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-black text-indigo-800 uppercase tracking-widest mb-1">Fast Scanning</p>
                 <p className="text-[10px] font-bold text-indigo-700 leading-relaxed">
-                  Hold the student's phone steady in front of the camera.
+                  Hold the phone steady in front of the camera.
                 </p>
               </div>
             </div>
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
+            <div className="p-4 md:p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
               <ShieldCheck className="w-5 h-5 text-slate-600 shrink-0" />
               <div>
                 <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-1">Secure Validation</p>
                 <p className="text-[10px] font-bold text-slate-700 leading-relaxed">
-                  Tokens are validated in real-time against the server.
+                  Tokens are validated in real-time.
                 </p>
               </div>
             </div>

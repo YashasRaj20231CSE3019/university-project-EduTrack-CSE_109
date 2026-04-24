@@ -50,25 +50,28 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
   const assignments = student?.assignments || [];
 
   const handleOpenGrading = (as: Assignment) => {
-    if (!isTeacherView) return;
     setSelectedAssignment(as);
     setGradeValue(as.grade === '-' ? '' : as.grade);
     setCommentsValue(as.comments || '');
   };
 
-  const handleSaveGrade = () => {
-    if (!selectedAssignment || !onUpdateAssignment) return;
+  const handleSaveGrade = async () => {
+    if (!selectedAssignment || !onUpdateAssignment || !isTeacherView) return;
     
     setIsSaving(true);
-    setTimeout(() => {
-      onUpdateAssignment(selectedAssignment.id, {
+    try {
+      await onUpdateAssignment(selectedAssignment.id, {
         grade: gradeValue,
         comments: commentsValue,
         status: 'graded'
       });
-      setIsSaving(false);
       setSelectedAssignment(null);
-    }, 800);
+    } catch (error) {
+      console.error('Failed to save grade:', error);
+      alert('Failed to save grade. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -255,9 +258,7 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
               <div 
                 key={as.id} 
                 onClick={() => handleOpenGrading(as)}
-                className={`p-4 md:p-6 flex items-center justify-between transition-all group ${
-                  isTeacherView ? 'cursor-pointer hover:bg-slate-50' : ''
-                }`}
+                className="p-4 md:p-6 flex items-center justify-between transition-all group cursor-pointer hover:bg-slate-50"
               >
                 <div className="flex items-center gap-3 md:gap-4">
                   <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center text-base md:text-lg border ${
@@ -267,7 +268,10 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                   </div>
                   <div>
                     <p className="text-xs md:text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-none mb-1">{as.title}</p>
-                    <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">{as.subject} • {new Date(as.date).toLocaleDateString()}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">{as.subject} • {new Date(as.date).toLocaleDateString()}</p>
+                      {as.comments && <span className="w-1 h-1 bg-indigo-400 rounded-full"></span>}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -289,19 +293,49 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
 
         {/* Attendance Timeline */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
-            <h4 className="font-bold text-slate-900 uppercase text-[10px] md:text-xs tracking-widest">Attendance Timeline</h4>
+          <div className="p-4 md:p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <h4 className="font-bold text-slate-900 uppercase text-[9px] md:text-xs tracking-widest">Attendance</h4>
+            <div className="flex gap-2">
+               <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+               <span className="text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest">Present</span>
+               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 ml-1"></span>
+               <span className="text-[7px] md:text-[8px] font-bold text-slate-400 uppercase tracking-widest">Absent</span>
+            </div>
           </div>
-          <div className="p-6 md:p-8 space-y-6 flex-1">
-            {attendanceHistory.length > 0 ? [...attendanceHistory].reverse().slice(0, 6).map((record, idx) => (
-              <div key={idx} className="flex items-center gap-4 md:gap-6 group">
-                <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full border-2 border-white shadow-sm ring-2 ${
+          <div className="p-4 md:p-8 space-y-4 flex-1">
+            {/* Subject Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {Array.from(new Set(attendanceHistory.map(r => r.subject || 'General'))).map(subj => {
+                const records = attendanceHistory.filter(r => (r.subject || 'General') === subj);
+                const attended = records.filter(r => r.presentStudentIds.includes(student.id)).length;
+                const total = records.length;
+                const rate = total > 0 ? Math.round((attended / total) * 100) : 0;
+                
+                return (
+                  <div key={subj} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex justify-between items-center mb-2">
+                       <p className="text-[9px] font-bold text-slate-900 truncate max-w-[120px]">{subj}</p>
+                       <p className="text-[9px] font-bold text-indigo-600">{rate}%</p>
+                    </div>
+                    <div className="w-full bg-slate-200 h-1 rounded-full overflow-hidden">
+                       <div className="bg-indigo-600 h-full" style={{ width: `${rate}%` }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="space-y-4">
+              {attendanceHistory.length > 0 ? [...attendanceHistory].reverse().slice(0, 6).map((record, idx) => (
+              <div key={idx} className="flex items-center gap-3 md:gap-6 group">
+                <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full border-2 border-white shadow-sm ring-2 ${
                   record.presentStudentIds.includes(student.id) ? 'bg-green-500 ring-green-50' : 'bg-rose-500 ring-rose-50'
                 }`}></div>
                 <div className="flex-1">
-                  <p className="text-xs md:text-sm font-bold text-slate-700">
+                  <p className="text-[10px] md:text-sm font-bold text-slate-700">
                     {new Date(record.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                   </p>
+                  <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{record.subject || 'General'}</p>
                 </div>
                 <span className={`text-[8px] md:text-[10px] font-bold uppercase tracking-widest ${
                   record.presentStudentIds.includes(student.id) ? 'text-green-600' : 'text-rose-600'
@@ -317,23 +351,25 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
           </div>
         </div>
       </div>
-    </>
-  )}
-
-    {/* Grading Modal */}
-      {selectedAssignment && isTeacherView && (
+    </div>
+  </>
+)}
+    {/* Assignment Details/Grading Modal */}
+      {selectedAssignment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in slide-in-from-bottom-8 duration-500 border border-slate-200 max-h-[90vh] flex flex-col">
              <div className="p-6 md:p-10 bg-indigo-600 text-white relative shrink-0">
                 <button 
                   onClick={() => setSelectedAssignment(null)}
                   className="absolute top-4 md:top-6 right-4 md:right-6 z-[100] w-10 h-10 md:w-12 md:h-12 bg-white/10 text-white rounded-full flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 border border-white/10"
-                  aria-label="Close grading"
+                  aria-label="Close"
                 >
                   <X className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
                 <div className="flex items-center gap-3 mb-2">
-                   <span className="px-2 py-0.5 bg-white/10 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest border border-white/10">GRADING</span>
+                   <span className="px-2 py-0.5 bg-white/10 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest border border-white/10">
+                     {isTeacherView ? 'GRADING' : 'ASSIGNMENT INFO'}
+                   </span>
                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest">{selectedAssignment.subject}</span>
                 </div>
                 <h3 className="text-xl md:text-2xl font-bold mb-1 tracking-tight">{selectedAssignment.title}</h3>
@@ -343,10 +379,11 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
              <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto">
                 {selectedAssignment.description && (
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Assignment Description</h4>
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Description</h4>
                     <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-medium">{selectedAssignment.description}</p>
                   </div>
                 )}
+                
                 {selectedAssignment.status !== 'pending' && (
                   <div className="space-y-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
                     <div>
@@ -379,48 +416,82 @@ const StudentDetails: React.FC<StudentDetailsProps> = ({ student, attendanceHist
                 )}
 
                 <div>
-                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Assign Final Grade</label>
+                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Total Marks (0-100)</label>
                    <div className="flex gap-4">
                       <input 
-                        type="text"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
                         value={gradeValue}
-                        onChange={(e) => setGradeValue(e.target.value)}
-                        placeholder="e.g. A, 95%"
-                        className="flex-1 px-4 md:px-6 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl text-base md:text-lg font-bold text-slate-900 focus:ring-2 focus:ring-indigo-900/10 focus:border-indigo-600 focus:outline-none transition-all placeholder:text-slate-300"
+                        onKeyDown={(e) => {
+                          if (!/[0-9]/.test(e.key) && !['Backspace', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'Delete'].includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '' || (Number(val) >= 0 && Number(val) <= 100)) {
+                            setGradeValue(val);
+                          }
+                        }}
+                        readOnly={!isTeacherView}
+                        placeholder={isTeacherView ? "0-100" : "Not graded yet"}
+                        className={`flex-1 px-4 md:px-6 py-3 md:py-4 border rounded-xl text-base md:text-lg font-bold transition-all focus:outline-none ${
+                          isTeacherView 
+                            ? 'bg-slate-50 border-slate-200 text-slate-900 focus:ring-2 focus:ring-indigo-900/10 focus:border-indigo-600' 
+                            : 'bg-slate-100 border-transparent text-slate-500'
+                        }`}
                       />
-                      <div className="w-16 md:w-20 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center border border-slate-200">
+                      <div className={`w-16 md:w-20 rounded-xl flex items-center justify-center border transition-colors ${
+                        isTeacherView ? 'bg-slate-50 border-slate-200 text-slate-400' : 'bg-slate-100 border-transparent text-slate-300'
+                      }`}>
                         <Target className="w-6 h-6 md:w-8 md:h-8" />
                       </div>
                    </div>
                 </div>
 
                 <div>
-                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Teacher Comments</label>
+                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Teacher Feedback</label>
                    <textarea 
                      value={commentsValue}
                      onChange={(e) => setCommentsValue(e.target.value)}
-                     placeholder="Add constructive feedback..."
-                     className="w-full h-24 md:h-32 px-4 md:px-6 py-3 md:py-4 bg-slate-50 border border-slate-200 rounded-xl text-xs md:text-sm font-medium text-slate-700 focus:ring-2 focus:ring-indigo-900/10 focus:border-indigo-600 focus:outline-none transition-all resize-none leading-relaxed"
+                     readOnly={!isTeacherView}
+                     placeholder={isTeacherView ? "Add constructive feedback..." : "No feedback provided yet."}
+                     className={`w-full h-24 md:h-32 px-4 md:px-6 py-3 md:py-4 border rounded-xl text-xs md:text-sm font-medium leading-relaxed resize-none transition-all focus:outline-none ${
+                       isTeacherView 
+                         ? 'bg-slate-50 border-slate-200 text-slate-700 focus:ring-2 focus:ring-indigo-900/10 focus:border-indigo-600' 
+                         : 'bg-slate-100 border-transparent text-slate-500'
+                     }`}
                    ></textarea>
                 </div>
 
-                <div className="flex gap-4">
-                   <button 
+                {isTeacherView ? (
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => setSelectedAssignment(null)}
+                      className="flex-1 py-3 md:py-4 bg-slate-50 text-slate-400 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200"
+                    >
+                      CANCEL
+                    </button>
+                    <button 
+                      onClick={handleSaveGrade}
+                      disabled={isSaving || !gradeValue.trim()}
+                      className={`flex-[2] py-3 md:py-4 bg-indigo-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all active:scale-95 ${
+                        isSaving || !gradeValue.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
+                      }`}
+                    >
+                      {isSaving ? 'SAVING...' : 'PUBLISH GRADE'}
+                    </button>
+                  </div>
+                ) : (
+                  <button 
                     onClick={() => setSelectedAssignment(null)}
-                    className="flex-1 py-3 md:py-4 bg-slate-50 text-slate-400 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all border border-slate-200"
-                   >
-                     CANCEL
-                   </button>
-                   <button 
-                    onClick={handleSaveGrade}
-                    disabled={isSaving || !gradeValue.trim()}
-                    className={`flex-[2] py-3 md:py-4 bg-indigo-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all active:scale-95 ${
-                      isSaving || !gradeValue.trim() ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
-                    }`}
-                   >
-                     {isSaving ? 'UPDATING...' : 'PUBLISH GRADE'}
-                   </button>
-                </div>
+                    className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all shadow-sm"
+                  >
+                    CLOSE VIEW
+                  </button>
+                )}
              </div>
           </div>
         </div>

@@ -124,6 +124,17 @@ const requireTeacher = (req: any, res: any, next: any) => {
   });
 };
 
+const requireAdmin = (req: any, res: any, next: any) => {
+  requireAuth(req, res, () => {
+    // Check if the user is the admin (based on email stored in db for that id)
+    const teacher = db.prepare('SELECT email FROM teachers WHERE id = ?').get(req.user.id) as any;
+    if (!teacher || teacher.email !== 'yashasrajvideos@gmail.com') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    next();
+  });
+};
+
 // API Routes
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
@@ -225,16 +236,16 @@ app.get("/api/attendance", requireAuth, (req, res) => {
 });
 
 app.post("/api/attendance", requireTeacher, (req, res) => {
-  const { date, presentStudentIds } = req.body;
+  const { date, presentStudentIds, subject, grade } = req.body;
   if (!date || !presentStudentIds) return res.status(400).json({ message: "Missing date or presentStudentIds" });
 
   const upsert = db.prepare(`
-    INSERT INTO attendance (date, presentStudentIds) 
-    VALUES (?, ?) 
-    ON CONFLICT(date) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
+    INSERT INTO attendance (date, subject, grade, presentStudentIds) 
+    VALUES (?, ?, ?, ?) 
+    ON CONFLICT(date, subject, grade) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
   `);
   const normalizedDate = date.split('T')[0];
-  upsert.run(normalizedDate, JSON.stringify(presentStudentIds));
+  upsert.run(normalizedDate, subject || 'General', grade || 'all', JSON.stringify(presentStudentIds));
   res.json({ success: true });
 });
 
@@ -337,17 +348,22 @@ app.post("/api/qr/verify", requireTeacher, (req, res) => {
     
     // Mark attendance for today
     const today = new Date().toISOString().split('T')[0];
-    const record = db.prepare('SELECT * FROM attendance WHERE date = ?').get(today) as any;
+    const subject = req.body.subject || 'General';
+    // For QR, we might need a generic 'all' or try to find student's grade
+    const student = db.prepare('SELECT grade FROM students WHERE id = ?').get(decoded.studentId) as any;
+    const grade = student ? student.grade : 'all';
+    
+    const record = db.prepare('SELECT * FROM attendance WHERE date = ? AND subject = ? AND grade = ?').get(today, subject, grade) as any;
     let presentIds = record ? JSON.parse(record.presentStudentIds) : [];
     
     if (!presentIds.includes(decoded.studentId)) {
       presentIds.push(decoded.studentId);
       const upsert = db.prepare(`
-        INSERT INTO attendance (date, presentStudentIds) 
-        VALUES (?, ?) 
-        ON CONFLICT(date) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
+        INSERT INTO attendance (date, subject, grade, presentStudentIds) 
+        VALUES (?, ?, ?, ?) 
+        ON CONFLICT(date, subject, grade) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
       `);
-      upsert.run(today, JSON.stringify(presentIds));
+      upsert.run(today, subject, grade, JSON.stringify(presentIds));
     }
 
     res.json({ success: true, studentId: decoded.studentId });
@@ -368,15 +384,15 @@ app.get("/api/announcements", requireAuth, (req: any, res) => {
 });
 
 app.post("/api/announcements", requireTeacher, (req: any, res) => {
-  const { id, title, message, priority, targetRole } = req.body;
+  const { id, title, message, priority, targetRole, attachmentUrl, attachmentName } = req.body;
   const createdAt = new Date().toISOString();
   const authorName = req.user.name;
   
   const insert = db.prepare(`
-    INSERT INTO announcements (id, title, message, priority, targetRole, createdAt, authorName)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO announcements (id, title, message, priority, targetRole, createdAt, authorName, attachmentUrl, attachmentName)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  insert.run(id, title, message, priority, targetRole, createdAt, authorName);
+  insert.run(id, title, message, priority, targetRole, createdAt, authorName, attachmentUrl || null, attachmentName || null);
   
   // Notify users via socket
   io.emit("announcement:new", {
@@ -386,9 +402,61 @@ app.post("/api/announcements", requireTeacher, (req: any, res) => {
     priority,
     targetRole,
     authorName,
-    createdAt
+    createdAt,
+    attachmentUrl,
+    attachmentName
   });
   
+  res.json({ success: true });
+});
+
+// Schedule Requests API
+app.get("/api/schedule-requests", requireAuth, (req: any, res) => {
+  const userId = req.user.id;
+  
+  // Admin check
+  const teacher = db.prepare('SELECT email FROM teachers WHERE id = ?').get(userId) as any;
+  const isAdmin = teacher && teacher.email === 'yashasrajvideos@gmail.com';
+
+  let requests;
+  if (isAdmin) {
+    requests = db.prepare('SELECT * FROM schedule_requests ORDER BY createdAt DESC').all();
+  } else {
+    requests = db.prepare('SELECT * FROM schedule_requests WHERE teacherId = ? ORDER BY createdAt DESC').all(userId);
+  }
+
+  res.json(requests.map((r: any) => ({
+    ...r,
+    details: JSON.parse(r.details || '{}')
+  })));
+});
+
+app.post("/api/schedule-requests", requireTeacher, (req: any, res) => {
+  const { id, title, description, details } = req.body;
+  const teacherId = req.user.id;
+  const teacherName = req.user.name;
+  const createdAt = new Date().toISOString();
+
+  const insert = db.prepare(`
+    INSERT INTO schedule_requests (id, teacherId, teacherName, title, description, createdAt, details)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  insert.run(id, teacherId, teacherName, title, description, createdAt, JSON.stringify(details || {}));
+  
+  res.json({ success: true });
+});
+
+app.patch("/api/schedule-requests/:id", requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const { status, adminComment } = req.body;
+
+  const update = db.prepare(`
+    UPDATE schedule_requests 
+    SET status = ?, adminComment = ?
+    WHERE id = ?
+  `);
+  update.run(status, adminComment || null, id);
+
   res.json({ success: true });
 });
 
@@ -482,9 +550,9 @@ app.post("/api/attendance/import-csv", requireTeacher, upload.single("file"), (r
     
     const summary: any[] = [];
     const upsert = db.prepare(`
-      INSERT INTO attendance (date, presentStudentIds) 
-      VALUES (?, ?) 
-      ON CONFLICT(date) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
+      INSERT INTO attendance (date, subject, grade, presentStudentIds) 
+      VALUES (?, ?, ?, ?) 
+      ON CONFLICT(date, subject, grade) DO UPDATE SET presentStudentIds = excluded.presentStudentIds
     `);
     
     db.transaction(() => {
@@ -493,13 +561,14 @@ app.post("/api/attendance/import-csv", requireTeacher, upload.single("file"), (r
         const idsArray = Array.from(studentIds);
         
         // Merge with existing attendance if any
-        const existingRecord = db.prepare('SELECT presentStudentIds FROM attendance WHERE date = ?').get(normalizedDate) as any;
+        // We use 'all' for CSV imports unless we enhance it further
+        const existingRecord = db.prepare('SELECT presentStudentIds FROM attendance WHERE date = ? AND subject = ? AND grade = ?').get(normalizedDate, 'General', 'all') as any;
         if (existingRecord) {
           const existingIds = JSON.parse(existingRecord.presentStudentIds);
           existingIds.forEach((id: string) => studentIds.add(id));
         }
         
-        upsert.run(normalizedDate, JSON.stringify(Array.from(studentIds)));
+        upsert.run(normalizedDate, 'General', 'all', JSON.stringify(Array.from(studentIds)));
         summary.push({ date: normalizedDate, imported: idsArray.length });
       }
     })();

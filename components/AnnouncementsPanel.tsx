@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Announcement, Role } from '../types';
 import { apiService } from '../services/apiService';
-import { Mailbox, Trash2, AlertOctagon, Pin, Info } from 'lucide-react';
+import { Mailbox, Trash2, AlertOctagon, Pin, Info, Paperclip, Download, X } from 'lucide-react';
 
 interface AnnouncementsPanelProps {
   userRole: Role;
@@ -20,6 +20,8 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
   const [priority, setPriority] = useState<'normal' | 'high' | 'urgent'>('normal');
   const [targetRole, setTargetRole] = useState<'all' | 'student' | 'teacher'>('all');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [attachment, setAttachment] = useState<{ url: string; filename: string } | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetchAnnouncements();
@@ -53,6 +55,21 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const res = await apiService.uploadFile(file);
+      setAttachment(res);
+    } catch (err: any) {
+      setError('Failed to upload file: ' + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !message.trim()) return;
@@ -65,6 +82,8 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
         message,
         priority,
         targetRole,
+        attachmentUrl: attachment?.url,
+        attachmentName: attachment?.filename,
         createdAt: new Date().toISOString(),
         authorName: 'Current User' // Handled by backend
       };
@@ -74,6 +93,7 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
       setMessage('');
       setPriority('normal');
       setTargetRole('all');
+      setAttachment(null);
       fetchAnnouncements();
     } catch (err: any) {
       setError(err.message || 'Failed to post announcement');
@@ -171,6 +191,31 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
                 </select>
               </div>
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Attachment (Optional)</label>
+              {attachment ? (
+                <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <Paperclip className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span className="text-sm font-medium text-indigo-900 truncate">{attachment.filename}</span>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => setAttachment(null)}
+                    className="p-1 hover:bg-indigo-100 rounded-full transition-colors text-indigo-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 cursor-pointer transition-colors w-fit">
+                  <Paperclip className="w-4 h-4" />
+                  <span>{isUploading ? 'Uploading...' : 'Attach File'}</span>
+                  <input type="file" className="hidden" onChange={handleFileChange} disabled={isUploading} />
+                </label>
+              )}
+            </div>
             
             <div className="flex justify-end pt-2">
               <button
@@ -228,6 +273,21 @@ const AnnouncementsPanel: React.FC<AnnouncementsPanelProps> = ({ userRole }) => 
                   <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed mb-3">
                     {announcement.message}
                   </p>
+
+                  {announcement.attachmentUrl && (
+                    <div className="mb-4">
+                      <a 
+                        href={announcement.attachmentUrl} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100 border-dashed"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{announcement.attachmentName || 'Download attachment'}</span>
+                      </a>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
                     <span>Posted by {announcement.authorName}</span>
                     <span>•</span>

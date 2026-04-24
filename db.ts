@@ -35,13 +35,17 @@ export function initDb() {
       status TEXT,
       submissionText TEXT,
       submissionFile TEXT,
+      comments TEXT,
       FOREIGN KEY (studentId) REFERENCES students(id)
     );
 
     CREATE TABLE IF NOT EXISTS attendance (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      date TEXT UNIQUE NOT NULL,
-      presentStudentIds TEXT NOT NULL
+      date TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      grade TEXT NOT NULL DEFAULT 'all',
+      presentStudentIds TEXT NOT NULL,
+      UNIQUE(date, subject, grade)
     );
 
     CREATE TABLE IF NOT EXISTS schedule (
@@ -72,7 +76,21 @@ export function initDb() {
       createdAt TEXT NOT NULL,
       authorName TEXT NOT NULL,
       priority TEXT DEFAULT 'normal',
-      targetRole TEXT DEFAULT 'all'
+      targetRole TEXT DEFAULT 'all',
+      attachmentUrl TEXT,
+      attachmentName TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS schedule_requests (
+      id TEXT PRIMARY KEY,
+      teacherId TEXT NOT NULL,
+      teacherName TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      status TEXT DEFAULT 'pending',
+      adminComment TEXT,
+      createdAt TEXT NOT NULL,
+      details TEXT NOT NULL -- JSON blob of the change (day, time, subject, etc.)
     );
 
     CREATE TABLE IF NOT EXISTS used_qr_tokens (
@@ -118,6 +136,13 @@ export function initDb() {
     // Column might already exist
   }
 
+  try {
+    db.exec("ALTER TABLE attendance ADD COLUMN subject TEXT;");
+    db.prepare("UPDATE attendance SET subject = 'General' WHERE subject IS NULL").run();
+  } catch (e) {
+    // Column might already exist
+  }
+
   // Migration: Add attachment fields to messages if they don't exist
   try {
     db.exec("ALTER TABLE messages ADD COLUMN attachmentUrl TEXT;");
@@ -135,10 +160,27 @@ export function initDb() {
     // Column might already exist
   }
   try {
-    db.exec("ALTER TABLE messages ADD COLUMN replyToId TEXT;");
-  } catch (e) {
-    // Column might already exist
-  }
+    db.exec("ALTER TABLE announcements ADD COLUMN attachmentUrl TEXT;");
+  } catch (e) {}
+  try {
+    db.exec("ALTER TABLE announcements ADD COLUMN attachmentName TEXT;");
+  } catch (e) {}
+
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS schedule_requests (
+        id TEXT PRIMARY KEY,
+        teacherId TEXT NOT NULL,
+        teacherName TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        adminComment TEXT,
+        createdAt TEXT NOT NULL,
+        details TEXT NOT NULL
+      );
+    `);
+  } catch (e) {}
 
   // Seed teachers if empty
   const teacherCount = db.prepare('SELECT count(*) as count FROM teachers').get() as { count: number };
@@ -173,7 +215,7 @@ export function initDb() {
     
     const insertStudent = db.prepare('INSERT INTO students (id, name, email, grade, avatar, behavioralNotes, parentContact) VALUES (?, ?, ?, ?, ?, ?, ?)');
     const insertAssignment = db.prepare('INSERT INTO assignments (id, studentId, title, subject, description, grade, date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-    const insertAttendance = db.prepare('INSERT INTO attendance (date, presentStudentIds) VALUES (?, ?)');
+    const insertAttendance = db.prepare('INSERT INTO attendance (date, subject, presentStudentIds) VALUES (?, ?, ?)');
     const insertSchedule = db.prepare('INSERT INTO schedule (id, day, startTime, endTime, subject, room, teacher) VALUES (?, ?, ?, ?, ?, ?, ?)');
     const insertActivity = db.prepare('INSERT INTO activities (id, title, subject, description, duration, learningObjectives, materials, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 
@@ -205,7 +247,7 @@ export function initDb() {
 
       for (const record of INITIAL_ATTENDANCE) {
         const normalizedDate = record.date.split('T')[0];
-        insertAttendance.run(normalizedDate, JSON.stringify(record.presentStudentIds));
+        insertAttendance.run(normalizedDate, record.subject, JSON.stringify(record.presentStudentIds));
       }
 
       for (const entry of MOCK_SCHEDULE) {

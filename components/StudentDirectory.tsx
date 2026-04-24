@@ -1,15 +1,16 @@
 
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Student } from '../types';
+import { Student, AttendanceRecord } from '../types';
 import { Search, X, UserPlus, Mail, GraduationCap } from 'lucide-react';
 
 interface StudentDirectoryProps {
   students: Student[];
+  attendance?: AttendanceRecord[];
   onEnrollStudent?: (student: Partial<Student>) => Promise<void>;
 }
 
-const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students, onEnrollStudent }) => {
+const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students, attendance = [], onEnrollStudent }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [gradeFilter, setGradeFilter] = useState('All Grades');
   const [showEnrollModal, setShowEnrollModal] = useState(false);
@@ -90,42 +91,49 @@ const StudentDirectory: React.FC<StudentDirectoryProps> = ({ students, onEnrollS
       
       {filteredStudents.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-          {filteredStudents.map(s => (
-            <div 
-              key={s.id} 
-              onClick={() => navigate(`/students/${s.id}`)}
-              className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md hover:border-indigo-300 transition-all duration-300 cursor-pointer relative flex flex-col items-center text-center"
-            >
-              <div className="relative mb-6">
-                <div className="w-20 h-20 rounded-2xl border border-slate-100 shadow-sm overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                  <img src={s.avatar} className="w-full h-full object-cover" alt={s.name} />
-                </div>
-                <div className="absolute -bottom-2 -right-2 px-2 py-1 bg-white border border-slate-200 text-[9px] font-bold rounded shadow-sm text-slate-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                  {s.grade}
-                </div>
-              </div>
-              
-              <div className="w-full px-2">
-                <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mb-1 truncate leading-none">{s.name}</h4>
-                <p className="text-[10px] font-medium text-slate-400 mb-6 lowercase truncate">{s.email}</p>
-                
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                   <div className="bg-slate-50 rounded-xl p-2 group-hover:bg-indigo-50/30 transition-colors">
-                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Attendance</p>
-                      <p className="text-xs font-bold text-slate-900">96.5%</p>
-                   </div>
-                   <div className="bg-slate-50 rounded-xl p-2 group-hover:bg-indigo-50/30 transition-colors">
-                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
-                      <p className="text-xs font-bold text-green-600 uppercase">Active</p>
-                   </div>
+          {filteredStudents.map(s => {
+            const myAttendance = attendance.filter(record => record.presentStudentIds.includes(s.id));
+            const attRate = attendance.length > 0 
+              ? Math.round((myAttendance.length / attendance.length) * 100) 
+              : 100;
+
+            return (
+              <div 
+                key={s.id} 
+                onClick={() => navigate(`/students/${s.id}`)}
+                className="group bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md hover:border-indigo-300 transition-all duration-300 cursor-pointer relative flex flex-col items-center text-center"
+              >
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 rounded-2xl border border-slate-100 shadow-sm overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                    <img src={s.avatar} className="w-full h-full object-cover" alt={s.name} />
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 px-2 py-1 bg-white border border-slate-200 text-[9px] font-bold rounded shadow-sm text-slate-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                    {s.grade}
+                  </div>
                 </div>
                 
-                <button className="w-full py-2 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all active:scale-95">
-                  VIEW PROFILE
-                </button>
+                <div className="w-full px-2">
+                  <h4 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mb-1 truncate leading-none">{s.name}</h4>
+                  <p className="text-[10px] font-medium text-slate-400 mb-6 lowercase truncate">{s.email}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 mb-6">
+                     <div className="bg-slate-50 rounded-xl p-2 group-hover:bg-indigo-50/30 transition-colors">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Attendance</p>
+                        <p className="text-xs font-bold text-slate-900">{attRate}%</p>
+                     </div>
+                     <div className="bg-slate-50 rounded-xl p-2 group-hover:bg-indigo-50/30 transition-colors">
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                        <p className="text-xs font-bold text-green-600 uppercase">Active</p>
+                     </div>
+                  </div>
+                  
+                  <button className="w-full py-2 bg-slate-50 border border-slate-200 text-slate-600 text-[10px] font-bold rounded-lg hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all active:scale-95">
+                    VIEW PROFILE
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-32 bg-white rounded-3xl border-2 border-dashed border-slate-200">
